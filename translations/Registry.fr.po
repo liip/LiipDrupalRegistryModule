@@ -1,0 +1,2 @@
+msgid "REGISTRY_MODULE_HELP"
+msgstr "FR: Hilfe für das 'Registry Modul'"

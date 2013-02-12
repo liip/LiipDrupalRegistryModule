@@ -1,0 +1,41 @@
+{
+    "name": "liip/drupalregistrymodule",
+    "description": "This module provides an API to by used to persist/cache information.",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "type": "drupal-module",
+    "keywords": [ "Drupal", "API", "registry", "Drupal 7", "ood", "software quality", "loose coupling"],
+
+    "authors": [
+        {
+            "name": "Bastian Feder",
+            "email": "bastian.feder@liip.ch",
+            "role": "maintainer"
+        },
+        {
+            "name": "Patrick Jezek",
+            "email": "patrick.jezek@liip.ch",
+            "role": "maintainer"
+        }
+    ],
+
+    "config": {
+        "github-protocols": ["https", "http", "git"]
+    },
+
+    "autoload": {
+        "psr-0": {
+           "Liip\\Drupal\\Modules\\Registry": "src"
+        }
+    },
+
+    "require": {
+        "php": ">=5.3.8,<5.4",
+        "liip/drupalconnectormodule": "dev-master",
+        "beberlei/assert": "dev-master"
+    },
+
+    "require-dev": {
+        "lapistano/proxy-object": "dev-master"
+    }
+}

@@ -1,0 +1,10 @@
+# Ignore coverage report of PHPUnit
+build
+
+# Ignore composer specific stuff
+vendor
+composer.lock
+
+# Ingore IDE specifics
+# phpStrom
+.idea
