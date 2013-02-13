@@ -19,4 +19,4 @@ if (file_exists($moduleDir . "/vendor/autoload.php")) {
     );
 }
 
-$loader->addClassMap(array("."));
+$loader->addClassMap(array("Liip\\Drupal\\Modules\\Registry\\RegistryTestCase" => $moduleDir . '/Tests/RegistryTestCase.php'));
