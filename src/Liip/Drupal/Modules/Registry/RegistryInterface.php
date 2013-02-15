@@ -46,11 +46,12 @@ interface RegistryInterface
     /**
      * Shall find the item corresponding to the provided identifier in the registry.
      *
-     * @param $identifier
+     * @param string $identifier
+     * @param null $default
      *
      * @return mixed
      */
-    public function getContentById($identifier);
+    public function getContentById($identifier, $default = null);
 
     /**
      * Shall delete the current registry from the database.

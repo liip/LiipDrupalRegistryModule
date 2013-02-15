@@ -160,12 +160,12 @@ class D7Config implements RegistryInterface
     /**
      * Finds the item corresponding to the provided identifier in the registry.
      *
-     * @param $identifier
+     * @param string $identifier
+     * @param null $default
      *
      * @return mixed
-     * @throws \Assert\InvalidArgumentException in case the identifier does not match a registered item.
      */
-    public function getContentById($identifier)
+    public function getContentById($identifier, $default = null)
     {
         $this->assertion->keyExists($this->registry, $identifier);
 
