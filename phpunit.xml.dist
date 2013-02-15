@@ -31,8 +31,6 @@
 
                 <directory>Tests</directory>
                 <directory>build</directory>
-                <directory>sites</directory>
-                <directory>templates</directory>
                 <directory>vendor</directory>
                 <directory>translations</directory>
 
