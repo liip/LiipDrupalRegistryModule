@@ -16,8 +16,7 @@ and use it.
 In case you don't use a [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md) compatible autoloader, you only have to add the `bootstrap.php` into your bootstrap or
 autoloader.
 
-Composer
---------
+###Composer
 Add the following lines to your `composer.json` file and update your project's composer installation.
 
 ```json
@@ -30,15 +29,57 @@ Add the following lines to your `composer.json` file and update your project's c
 
 This composer configuration will checkout the 'cutting eadge' version ('dev-master') of the project. Be alarmed that this might be broken sometimes.
 
+
 **NOTE:**
 In case you do not know what this means the [composer project website](http://getcomposer.org) is a good place to start.
 
 
-Github
-------
+### Github
 Thus I recommend the composer way to make LiipDrupalRegistryModule a dependency to your project.
 The sources are also available via github. Just clone it as you might be familiar with.
 
 ```bash
 $ git clone git://github.com/liip/drupalregistrymodule.git
+```
+
+## Dependencies
+
+- LiipDrupalConnector (http://github.com/liip/liipdrupalconnector)
+- Assert (http://github.com/beberlei/assert)
+
+## Usage
+A good place to find examples of how this library works is always the Tests folder.
+For those not familiar with PHPUnit a short intro:
+
+```php
+
+$factory = new \Liip\Drupal\Modules\DrupalConnector\ConnectorFactory();
+$connector = $factory->getCommonConnector();
+
+$assertions = new \Assert\Assertion();
+
+$registry = new D7Config('myEvents', $connector, $assertions);
+
+// put stuff in to the registry.
+$registry->register('eventItemRegister', $item);
+
+// get as single element out of the registry or an empty array if it oes not exist.
+$item = $registry->getContentById('eventItemRegister', array());
+
+// get complete register
+$items = $register->getContent();
+
+// replace content of an item with a new value
+$register->replace('eventItemRegister', $newItem);
+
+// determine if an element is already registered
+$inRegister = $register->isRegistered('eventItemRegister');
+
+
+// get rid of a single element
+$registry->unregister('eventItemRegister');
+
+// destroy the complete registry
+$registry->destroy();
+
 ```
