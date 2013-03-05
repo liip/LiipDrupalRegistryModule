@@ -56,6 +56,7 @@ class RegistryTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Registry::register
+     * @covers \Liip\Drupal\Modules\Registry\Registry::__construct
      */
     public function testRegister()
     {
