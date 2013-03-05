@@ -1,0 +1,16 @@
+<?php
+use Liip\Drupal\Modules\DrupalConnector\ConnectorFactory;
+
+/**
+ * @param string $path
+ *
+ * @return string
+ */
+function Registry_help($path)
+{
+    if ('admin/help#Registry' == $path) {
+
+        return ConnectorFactory::getCommonConnector()->t('REGISTRY_MODULE_HELP');
+    }
+
+}

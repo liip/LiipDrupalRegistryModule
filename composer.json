@@ -1,0 +1,40 @@
+{
+    "name": "commit/frontend/modules/registry",
+    "description": "This module provides an API to the Drupal 7 global $config array.",
+    "license": "MIT",
+    "minimum-stability": "dev",
+
+    "authors": [
+        {
+            "name": "Bastian Feder",
+            "email": "bastian.feder@liip.ch",
+            "role": "maintainer"
+        }
+    ],
+
+    "config": {
+        "github-protocols": ["https", "http", "git"]
+    },
+
+    "autoload": {
+        "classmap": ["Classes"]
+    },
+
+    "require": {
+        "php": ">=5.3.8",
+        "liip/drupalconnectormodule": "dev-master",
+        "beberlei/assert": "dev-master"
+    },
+
+    "require-dev": {
+        "lapistano/proxy-object": "dev-master"
+    },
+
+    "extra": {
+        "installer-paths": {
+            "vendor/liip/{$name}/": [
+                "liip/drupalconnectormodule"
+            ]
+        }
+    }
+}
