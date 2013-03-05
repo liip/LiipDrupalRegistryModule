@@ -3,7 +3,7 @@ namespace Liip\Drupal\Modules\Registry\Drupal;
 
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
-use Liip\Drupal\Modules\Registry\RegistryTestCase;
+use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class D7ConfigTest extends RegistryTestCase
 {

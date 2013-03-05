@@ -1,6 +1,5 @@
 <?php
-
-namespace Liip\Drupal\Modules\Registry;
+namespace Liip\Drupal\Modules\Registry\Tests;
 
 use lapistano\ProxyObject\ProxyBuilder;
 

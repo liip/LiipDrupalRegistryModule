@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ignore coverage report of PHPUnit
 build
 
@@ -8,3 +9,7 @@ composer.lock
 # Ingore IDE specifics
 # phpStrom
 .idea
+=======
+vendor/
+build/
+>>>>>>> toMerge

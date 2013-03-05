@@ -1,2 +1,14 @@
 msgid "REGISTRY_MODULE_HELP"
 msgstr "FR: Hilfe für das 'Registry Modul'"
+
+msgid "Given identifier already applies to an item of the registry. Please choose a different one."
+msgstr "FR: Der gewünschte Schlüssel wurde schon verwendet. Bitte nutze einen anderen."
+
+msgid "Given identifier does not applies to an item of the registry."
+msgstr "FR: Der gewünschte Schlüssel konnte keinem Inhalt zur Modifikation zugeordnet werden."
+
+msgid "Given identifier does not match a registered one."
+msgstr "FR: Der gewünschte Schlüssel existiert nicht in der Registration"
+
+msgid "It is not possible to reinitiate an already active registry."
+msgstr "FR: Eine aktive Registration kann nicht reinitiiert werden."

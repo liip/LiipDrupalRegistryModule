@@ -1,7 +1,9 @@
 name = Liip Drupal Registry Module
-description = This module provides an API to the Drupal 7 global $config array.
+description = This module provides an API to a key/value organised registry.
 core = 7.x
 package = Liip Drupal Modules
+version = 0.5
 
 php = 5.3
 
+files[] = Registry.module

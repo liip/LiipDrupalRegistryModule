@@ -4,8 +4,7 @@
     "license": "MIT",
     "minimum-stability": "dev",
     "type": "drupal-module",
-    "keywords": [ "Drupal", "API", "registry", "Drupal 7", "ood", "software quality", "loose coupling"],
-
+    "keywords": [ "Drupal", "API", "registry", "Drupal 7", "ood", "software quality", "loose coupling" ],
     "authors": [
         {
             "name": "Bastian Feder",
