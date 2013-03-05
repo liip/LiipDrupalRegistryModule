@@ -11,6 +11,17 @@ use Liip\Drupal\Modules\Registry\Registry;
 class D7Config extends Registry
 {
     /**
+     * @param string $section
+     * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
+     * @param \Assert\Assertion $assertion
+     */
+    public function __construct($section, Common $dcc, Assertion $assertion)
+    {
+        parent::__construct($section, $dcc, $assertion);
+        $this->registry = $dcc->variable_get($section, array());
+    }
+
+    /**
      * Adds an item to the registry.
      *
      * @param string $identifier

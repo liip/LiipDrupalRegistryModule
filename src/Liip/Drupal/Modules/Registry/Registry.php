@@ -32,6 +32,7 @@ abstract class Registry implements RegistryInterface
 
 
     /**
+     * @param string $section
      * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
      */
@@ -43,7 +44,7 @@ abstract class Registry implements RegistryInterface
         $this->verifySectionName($section);
         $this->section = $section;
 
-        $this->registry = $dcc->variable_get($section, array());
+        $this->registry = array();
     }
 
     /**
