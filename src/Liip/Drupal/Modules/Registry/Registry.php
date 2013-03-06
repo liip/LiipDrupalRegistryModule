@@ -30,6 +30,15 @@ abstract class Registry implements RegistryInterface
      */
     protected $section = '';
 
+//    /**
+//     * Shall delete the current registry from the database.
+//     */
+//    abstract public function destroy();
+//
+//    /**
+//     * Shall register a new section in the registry
+//     */
+//    abstract public function init();
 
     /**
      * @param string $section

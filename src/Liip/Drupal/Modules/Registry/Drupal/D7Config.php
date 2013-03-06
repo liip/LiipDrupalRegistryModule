@@ -77,4 +77,21 @@ class D7Config extends Registry
             "Section $this->section could not be destroyed from the registry."
         );
     }
+
+    /**
+     * Initates a registry.
+     *
+     * @throws \netmigrosintranet\modules\Registry\Classes\RegistryException in case the initiation of an active registry was requested.
+     */
+    public function init()
+    {
+        if(! empty($this->registry)) {
+            throw new RegistryException(
+                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
+                RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
+            );
+        }
+
+        $this->drupalCommonConnector->variable_set($this->section, $this->registry);
+    }
 }

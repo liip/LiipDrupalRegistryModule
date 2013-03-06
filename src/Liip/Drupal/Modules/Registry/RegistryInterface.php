@@ -57,4 +57,9 @@ interface RegistryInterface
      * Shall delete the current registry from the database.
      */
     public function destroy();
+
+    /**
+     * Shall register a new section in the registry
+     */
+    public function init();
 }
