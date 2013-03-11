@@ -190,4 +190,22 @@ class RegistryTest extends RegistryTestCase
 
         $this->assertInternalType('array', $registry->getContentById('worldOfOs'));
     }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Registry::getContentByIds
+     */
+    public function testGetContentByIds()
+    {
+        $assertions = $this->getAssertionObjectMock();
+
+        $registry = $this->getRegistryObject($assertions);
+        $registry->register('worldOfOs', array());
+        $registry->register('worldOfWarcraft', array());
+        $registry->register('worldOfWisdom', array());
+
+        $this->assertEquals(
+            array('worldOfOs' => array(), 'worldOfWarcraft' => array()),
+            $registry->getContentByIds(array('worldOfOs', 'worldOfWarcraft'))
+        );
+    }
 }

@@ -44,7 +44,7 @@ interface RegistryInterface
     public function getContent();
 
     /**
-     * Shall find the item corresponding to the provided identifier in the registry.
+     * Shall find the registry item corresponding to the provided identifier.
      *
      * @param string $identifier
      * @param null $default
@@ -52,6 +52,15 @@ interface RegistryInterface
      * @return mixed
      */
     public function getContentById($identifier, $default = null);
+
+    /**
+     * Shall find the registry items corresponding to the provided list of identifiers.
+     *
+     * @param array $identifiers
+     *
+     * @return array
+     */
+    public function getContentByIds(array $identifiers);
 
     /**
      * Shall delete the current registry from the database.

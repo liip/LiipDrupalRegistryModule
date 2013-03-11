@@ -110,9 +110,32 @@ abstract class Registry implements RegistryInterface
      */
     public function getContentById($identifier, $default = null)
     {
-        $this->assertion->keyExists($this->registry, $identifier);
+        $this->assertion->keyExists(
+            $this->registry,
+            $identifier,
+            'Requested item ('. $identifier .') is not registered in the current registry.'
+        );
 
         return $this->registry[$identifier];
+    }
+
+    /**
+     * Shall find the registry items corresponding to the provided list of identifiers.
+     *
+     * @param array $identifiers
+     *
+     * @return array
+     */
+    public function getContentByIds(array $identifiers)
+    {
+        $items = array();
+
+        foreach($identifiers as $id) {
+
+            $items[$id] = $this->getContentById($id);
+        }
+
+        return $items;
     }
 
     /**
@@ -120,6 +143,8 @@ abstract class Registry implements RegistryInterface
      *
      * @param string $identifier
      * @param mixed $value
+     * @throws RegistryException
+     * @return void
      */
     public function register($identifier, $value)
     {
