@@ -6,6 +6,7 @@ use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Registry;
+use Liip\Drupal\Modules\Registry\RegistryException;
 
 
 class D7Config extends Registry

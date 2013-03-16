@@ -203,4 +203,36 @@ class D7ConfigTest extends RegistryTestCase
 
         $registry->destroy();
     }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init()
+     */
+    public function testInit()
+    {
+        $dcc = $this->getDrupalCommonConnectorFixture(array('variable_set'));
+        $dcc
+            ->expects($this->once())
+            ->method('variable_set')
+            ->with(
+                $this->isType('string'),
+                $this->isType('array')
+            );
+
+        $registry = new D7Config('Tux', $dcc, $this->getAssertionObjectMock());
+        $registry->init();
+
+        $this->assertAttributeEquals(array(), 'registry', $registry);
+    }
+
+
+    /**
+     * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init()
+     */
+    public function testInitExpectingException()
+    {
+        $registry = $this->getD7ConfigProxy(array('gt'));
+        $registry->registry = array('tux');
+        $registry->init();
+    }
 }
