@@ -22,7 +22,7 @@ Add the following lines to your `composer.json` file and update your project's c
 ```json
 {
     "require": {
-       "liip/liipdrupalregistrymodule": "dev-master"
+       "liip/drupalregistrymodule": "dev-master"
     }
 }
 ```
@@ -39,12 +39,12 @@ Thus I recommend the composer way to make LiipDrupalRegistryModule a dependency 
 The sources are also available via github. Just clone it as you might be familiar with.
 
 ```bash
-$ git clone git://github.com/liip/liipdrupalregistrymodule.git
+$ git clone git@github.com:liip/LiipDrupalRegistryModule.git
 ```
 
 ## Dependencies
 
-- LiipDrupalConnector (http://github.com/liip/liipdrupalconnector)
+- LiipDrupalConnector (https://github.com/liip/LiipDrupalConnectorModule.git)
 - Assert (http://github.com/beberlei/assert)
 
 ## Usage
