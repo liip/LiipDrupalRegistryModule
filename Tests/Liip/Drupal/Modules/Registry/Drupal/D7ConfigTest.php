@@ -28,6 +28,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::register
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::__construct
      */
     public function testRegister()
     {
@@ -205,7 +206,7 @@ class D7ConfigTest extends RegistryTestCase
     }
 
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init()
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init
      */
     public function testInit()
     {
@@ -224,14 +225,13 @@ class D7ConfigTest extends RegistryTestCase
         $this->assertAttributeEquals(array(), 'registry', $registry);
     }
 
-
     /**
      * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
-     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init()
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init
      */
     public function testInitExpectingException()
     {
-        $registry = $this->getD7ConfigProxy(array('gt'));
+        $registry = $this->getD7ConfigProxy(array('t'));
         $registry->registry = array('tux');
         $registry->init();
     }
