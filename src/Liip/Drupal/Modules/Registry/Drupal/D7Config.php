@@ -73,10 +73,12 @@ class D7Config extends Registry
         $this->drupalCommonConnector->variable_del($this->section, $this->registry);
 
         $content = $this->drupalCommonConnector->variable_get($this->section, array());
-        $this->assertion->notEmpty(
-            $content,
-            "Section $this->section could not be destroyed from the registry."
-        );
+
+        if (!empty($content)) {
+            throw new \InvalidArgumentException(
+                "Section $this->section could not be destroyed from the registry."
+            );
+        }
     }
 
     /**

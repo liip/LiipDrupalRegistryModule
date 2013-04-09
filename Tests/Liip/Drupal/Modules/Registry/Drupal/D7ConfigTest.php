@@ -194,12 +194,10 @@ class D7ConfigTest extends RegistryTestCase
             ->method('variable_get')
             ->will($this->returnValue(array()));
 
-        $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
-
         $registry = new D7Config(
             'mySection',
             $dcc,
-            $assertions
+            new Assertion()
         );
 
         $registry->destroy();
