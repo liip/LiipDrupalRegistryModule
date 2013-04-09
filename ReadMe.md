@@ -7,7 +7,7 @@ provided as the default and example implementation for the registry.
 
 ##Current Travis Status
 
-[![Build Status](https://secure.travis-ci.org/liip/drupalregistrymodule.png?branch=master)](http://travis-ci.org/liip/drupalregistrymodule)
+[![Build Status](https://travis-ci.org/liip/LiipDrupalRegistryModule.png?branch=master)](https://travis-ci.org/liip/LiipDrupalRegistryModule)
 
 
 ## Installation
