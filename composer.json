@@ -4,7 +4,7 @@
     "license": "MIT",
     "minimum-stability": "dev",
     "type": "drupal-module",
-    "keywords": [ "Drupal", "API", "registry", "Drupal 7", "ood", "software quality", "loose coupling" ],
+    "keywords": [ "Drupal", "API", "registry", "Drupal 7", "ood", "software quality", "loose coupling", "elasticsearch" ],
     "authors": [
         {
             "name": "Bastian Feder",
@@ -36,6 +36,10 @@
 
     "require-dev": {
         "lapistano/proxy-object": "dev-master"
+    },
+
+    "suggest": {
+        "ruflin/elastica": "Allows the registry to be an elasticsearch index."
     },
 
     "extra": {

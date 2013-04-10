@@ -14,4 +14,10 @@ class RegistryException extends \Exception
 
     const DUPLICATE_INITIATION_ATTEMPT_CODE = 4;
     const DUPLICATE_INITIATION_ATTEMPT_TEXT = "Registry does already exist!";
+
+    const MISSING_DEPENDENCY_CODE = 5;
+    const MISSING_DEPENDENCY_TEXT = "Mandatory dependency missing!";
+
+    const INVALID_OPTIONS_CODE = 6;
+    const INVALID_OPTIONS_TEXT = "Given elasticsearch options are not valid";
 }

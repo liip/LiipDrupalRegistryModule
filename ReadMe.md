@@ -47,6 +47,10 @@ $ git clone git@github.com:liip/LiipDrupalRegistryModule.git
 - LiipDrupalConnector (https://github.com/liip/LiipDrupalConnectorModule.git)
 - Assert (http://github.com/beberlei/assert)
 
+### Optional
+
+- Elastica (https://github.com/ruflin/elastica)
+
 ## Usage
 A good place to find examples of how this library works is always the Tests folder.
 For those not familiar with PHPUnit a short intro:
