@@ -120,10 +120,21 @@ class Elasticsearch extends Registry
      */
     protected function validateElasticaDependency()
     {
-        throw new RegistryException(
-            RegistryException::MISSING_DEPENDENCY_TEXT,
-            RegistryException::MISSING_DEPENDENCY_CODE
-        );
+        if (!class_exists('\Elastica\Index')) {
+
+            throw new RegistryException(
+                RegistryException::UNSUPPORTED_DEPENDENCY_VERSION_TEXT,
+                RegistryException::UNSUPPORTED_DEPENDENCY_VERSION_CODE
+            );
+        }
+
+        if (!class_exists('Elastica_Index')) {
+
+            throw new RegistryException(
+                RegistryException::MISSING_DEPENDENCY_TEXT,
+                RegistryException::MISSING_DEPENDENCY_CODE
+            );
+        }
     }
 
     /**

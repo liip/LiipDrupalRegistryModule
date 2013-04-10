@@ -18,6 +18,9 @@ class RegistryException extends \Exception
     const MISSING_DEPENDENCY_CODE = 5;
     const MISSING_DEPENDENCY_TEXT = "Mandatory dependency missing!";
 
-    const INVALID_OPTIONS_CODE = 6;
-    const INVALID_OPTIONS_TEXT = "Given elasticsearch options are not valid";
+    const UNSUPPORTED_DEPENDENCY_VERSION_CODE = 6;
+    const UNSUPPORTED_DEPENDENCY_VERSION_TEXT = "Unsupported version of a mandatory dependency.";
+
+    const INVALID_OPTIONS_CODE = 7;
+    const INVALID_OPTIONS_TEXT = "Given elasticsearch options are not valid.";
 }
