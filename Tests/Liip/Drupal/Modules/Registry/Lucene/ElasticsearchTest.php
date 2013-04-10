@@ -66,4 +66,17 @@ class ElasticsearchTest extends RegistryTestCase
 
         $registry->validateOptions(array());
     }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateOptions
+     */
+    public function testValidateOptions()
+    {
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setMethods(array('validateOptions'))
+            ->getProxy();
+
+        $this->assertNull($registry->validateOptions($this->getElasticsearchOptions()));
+    }
 }
