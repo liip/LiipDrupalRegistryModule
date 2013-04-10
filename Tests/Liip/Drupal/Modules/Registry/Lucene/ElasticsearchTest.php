@@ -38,8 +38,7 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::destroy
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::__construct
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateElasticaDependency
      */
     public function testInvalidateElasticaDependency()
     {
@@ -51,5 +50,20 @@ class ElasticsearchTest extends RegistryTestCase
             ->getProxy();
 
         $registry->validateElasticaDependency();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateOptions
+     */
+    public function testInvalidOptions()
+    {
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setMethods(array('validateOptions'))
+            ->getProxy();
+
+        $registry->validateOptions(array());
     }
 }
