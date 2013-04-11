@@ -6,6 +6,15 @@ use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
 {
+    protected function setUp()
+    {
+        if (!class_exists('\Elastica\Index')) {
+            $this->markTestSkipped(
+                'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
+            );
+        }
+    }
+
     /**
      * Provides an array reflecting the configuration options of Elasticsearch.
      *
@@ -55,6 +64,12 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testInvalidateElasticaDependency()
     {
+        if (class_exists('\Elastica\Index')) {
+            $this->markTestSkipped(
+                'This test will always fail in case the library is available.'
+            );
+        }
+
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
 
         $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')

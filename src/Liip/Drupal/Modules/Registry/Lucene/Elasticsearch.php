@@ -28,7 +28,7 @@ class Elasticsearch extends Registry
     /**
      * Initates a registry.
      *
-     * @throws \netmigrosintranet\modules\Registry\Classes\RegistryException in case the initiation of an active registry was requested.
+     * @throws \Liip\Drupal\Modules\Registry\RegistryException in case the initiation of an active registry was requested.
      */
     public function init()
     {
@@ -123,14 +123,6 @@ class Elasticsearch extends Registry
         if (!class_exists('\Elastica\Index')) {
 
             throw new RegistryException(
-                RegistryException::UNSUPPORTED_DEPENDENCY_VERSION_TEXT,
-                RegistryException::UNSUPPORTED_DEPENDENCY_VERSION_CODE
-            );
-        }
-
-        if (!class_exists('Elastica_Index')) {
-
-            throw new RegistryException(
                 RegistryException::MISSING_DEPENDENCY_TEXT,
                 RegistryException::MISSING_DEPENDENCY_CODE
             );
@@ -147,10 +139,16 @@ class Elasticsearch extends Registry
      */
     protected function validateOptions(array $options)
     {
-        throw new RegistryException(
-            RegistryException::INVALID_OPTIONS_TEXT,
-            RegistryException::INVALID_OPTIONS_CODE
-        );
+        $hasError = false;
+
+        // do a structure and content test.
+
+        if (!$hasError) {
+            throw new RegistryException(
+                RegistryException::INVALID_OPTIONS_TEXT,
+                RegistryException::INVALID_OPTIONS_CODE
+            );
+        }
     }
 
 }
