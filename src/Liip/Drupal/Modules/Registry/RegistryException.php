@@ -20,7 +20,4 @@ class RegistryException extends \Exception
 
     const UNSUPPORTED_DEPENDENCY_VERSION_CODE = 6;
     const UNSUPPORTED_DEPENDENCY_VERSION_TEXT = "Unsupported version of a mandatory dependency.";
-
-    const INVALID_OPTIONS_CODE = 7;
-    const INVALID_OPTIONS_TEXT = "Given elasticsearch options are not valid.";
 }
