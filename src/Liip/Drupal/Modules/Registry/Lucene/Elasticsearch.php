@@ -2,13 +2,26 @@
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Assert\Assertion;
+use Assert\InvalidArgumentException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
+use Elastica\Client;
 
 
 class Elasticsearch extends Registry
 {
+    /**
+     * @var \Elastica\Client Instance of the elasticsearch library.
+     */
+    protected $elasticaClient;
+
+    /**
+     * @var \Elastica\Index[]
+     */
+    protected $indexes;
+
+
     /**
      * @param string $section
      * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
@@ -18,7 +31,6 @@ class Elasticsearch extends Registry
     public function __construct($section, Common $dcc, Assertion $assertion, array $options)
     {
         $this->validateElasticaDependency();
-        $this->validateOptions($options);
 
         parent::__construct($section, $dcc, $assertion);
 
@@ -109,6 +121,7 @@ class Elasticsearch extends Registry
     public function destroy()
     {
         // close and delete index using elastica
+        $
 
         $this->registry = array();
     }
@@ -130,25 +143,36 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Verifies the validity of the elasticsearch options array.
+     * Provides an elastica client.
      *
-     * @param array $options
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
-     *
-     * @link http://www.elasticsearch.org/guide/reference/setup/configuration/
+     * @return \Elastica_Client
      */
-    protected function validateOptions(array $options)
+    protected function getElasticaClient()
     {
-        $hasError = false;
+        if (empty($this->elasticaClient)) {
 
-        // do a structure and content test.
-
-        if (!$hasError) {
-            throw new RegistryException(
-                RegistryException::INVALID_OPTIONS_TEXT,
-                RegistryException::INVALID_OPTIONS_CODE
-            );
+            $this->elasticaClient = new Client();
         }
+
+        return $this->elasticaClient;
     }
 
+    /**
+     * Provides an elasticsearch index to attach documents to.
+     *
+     * @param string $indexName
+     *
+     * @return \Elastica\Index
+     */
+    protected function getElasticaIndex($indexName)
+    {
+        if (empty($this->indexes[$indexName])) {
+
+            $client = $this->getElasticaClient();
+
+            $this->indexes[$indexName] = $client->getIndex($indexName);
+        }
+
+        return $this->indexes[$indexName];
+    }
 }

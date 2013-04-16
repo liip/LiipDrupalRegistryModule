@@ -47,7 +47,7 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateOptions
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateElasticaDependency
      */
     public function testValidateElasticDependency()
     {
@@ -60,51 +60,33 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateElasticaDependency
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getElasticaClient
      */
-    public function testInvalidateElasticaDependency()
+    public function testgetElasticaClient()
     {
-        if (class_exists('\Elastica\Index')) {
-            $this->markTestSkipped(
-                'This test will always fail in case the library is available.'
-            );
-        }
-
-        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
-
         $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
             ->disableOriginalConstructor()
-            ->setMethods(array('validateElasticaDependency'))
+            ->setMethods(array('getElasticaClient'))
             ->getProxy();
 
-        $registry->validateElasticaDependency();
+        $client = $registry->getElasticaClient();
+
+        $this->assertAttributeInstanceOf('\Elastica\Client', 'elasticaClient', $registry);
+        $this->assertInstanceOf('\Elastica\Client', $client);
     }
 
-    /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateOptions
-     */
-    public function testInvalidOptions()
-    {
-        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
-
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
-            ->disableOriginalConstructor()
-            ->setMethods(array('validateOptions'))
-            ->getProxy();
-
-        $registry->validateOptions(array());
-    }
-
-    /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::validateOptions
-     */
-    public function testValidateOptions()
+    public function testGetElasticaIndex()
     {
         $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
             ->disableOriginalConstructor()
-            ->setMethods(array('validateOptions'))
+            ->setMethods(array('getElasticaIndex'))
             ->getProxy();
 
-        $this->assertNull($registry->validateOptions($this->getElasticsearchOptions()));
+        $index = $registry->getElasticaIndex('Tux');
+
+        $attrib = $this->readAttribute($registry, 'indexes');
+        $this->assertInstanceOf('\Elastica\Index', $attrib['Tux']);
+
+        $this->assertSame($index, $attrib['Tux']);
     }
 }
