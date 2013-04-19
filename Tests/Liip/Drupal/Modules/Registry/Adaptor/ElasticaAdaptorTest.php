@@ -14,17 +14,23 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     protected static $indexName = 'testindex';
 
-
+    /**
+     * restores the state of the elasticsearch cluster before the test suite run.
+     */
     public static function tearDownAfterClass()
     {
         $client =  new Client();
         $index = new Index($client, self::$indexName);
-        $response = $index->delete();
 
-        if ($response->hasError()) {
-            //$this->fail('Failed to tear down the test suite.');
+        if ($index->exists()) {
 
-            print_r($response->getError());
+            $response = $index->delete();
+
+            if ($response->hasError()) {
+                //$this->fail('Failed to tear down the test suite.');
+
+                print_r($response->getError());
+            }
         }
     }
 
@@ -94,7 +100,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     public function testUpdateDocument()
     {
         $adaptor = new ElasticaAdaptor();
-        $document = $adaptor->registerDocument(
+        $adaptor->registerDocument(
             self::$indexName,
             array('food' => 'Moules'),
             'foodStock'
@@ -167,7 +173,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             )
         );
 
-        $updatedDocument = $adaptor->updateDocument(
+        $adaptor->updateDocument(
             'foodStock',
             $rawData,
             self::$indexName
@@ -238,4 +244,17 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         );
     }
 
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::deleteIndex
+     */
+    public function testDeleteIndex()
+    {
+        $adaptor = new ElasticaAdaptor();
+        $adaptor->deleteIndex(self::$indexName);
+
+        $client = new Client();
+        $index = $client->getIndex(self::$indexName);
+
+        $this->assertFalse($index->exists());
+    }
 }
