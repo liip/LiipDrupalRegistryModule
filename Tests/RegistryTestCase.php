@@ -3,7 +3,7 @@ namespace Liip\Drupal\Modules\Registry\Tests;
 
 use lapistano\ProxyObject\ProxyBuilder;
 
-class RegistryTestCase extends \PHPUnit_Framework_TestCase
+abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
 {
 
     /**
