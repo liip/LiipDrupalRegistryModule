@@ -82,7 +82,10 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
 
         $adaptor = new ElasticaAdaptor();
 
-        $this->assertInstanceOf('\Elastica\Document', $adaptor->registerDocument(self::$indexName, $value));
+        $this->assertInstanceOf(
+            '\Elastica\Document',
+            $adaptor->registerDocument(self::$indexName, $value)
+        );
     }
 
     /**
@@ -110,7 +113,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             self::$indexName
         );
 
-        $data = $document->getData();
+        $data = $updatedDocument->getData();
 
         $this->assertArrayHasKey('nearNonFood', $data);
         $this->assertEquals('Sponch', $data['nearNonFood']);
@@ -169,6 +172,28 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             $rawData,
             self::$indexName
         );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::removeDocuments
+     */
+    public function testRemoveDocument()
+    {
+        $adaptor = new ElasticaAdaptor();
+        $adaptor->registerDocument(
+            self::$indexName,
+            array('tux' => 'devil'),
+            'toBeRemoved'
+        );
+
+        $index = $adaptor->getIndex(self::$indexName);
+        $type = $index->getType('collab');
+
+        $adaptor->removeDocuments(array('toBeRemoved'), self::$indexName);
+
+        // this is afaik the only safe way to really find out if the document was removed from index.
+        $this->setExpectedException('\\Elastica\\Exception\\NotFoundException');
+        $type->getDocument('toBeRemoved');
     }
 
     /**
