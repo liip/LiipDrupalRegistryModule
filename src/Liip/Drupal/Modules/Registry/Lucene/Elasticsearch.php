@@ -19,7 +19,7 @@ class Elasticsearch extends Registry
     /**
      * @var \Elastica\Index[]
      */
-    protected $indexes;
+    protected $registry;
 
 
     /**
@@ -33,6 +33,9 @@ class Elasticsearch extends Registry
         $this->validateElasticaDependency();
 
         parent::__construct($section, $dcc, $assertion);
+
+        // elastica will complain if the index name is not lowercase.
+        $this->section = strtolower($section);
 
         $this->init();
     }
@@ -51,9 +54,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        // something with elastica
-
-        $this->registry[$this->section] = array();
+        $this->registry[$this->section] = $this->getElasticaIndex($this->section);
     }
 
     /**
@@ -73,7 +74,9 @@ class Elasticsearch extends Registry
             );
         }
 
-        // something with elastica
+        $index = $this->getElasticaIndex($this->section);
+        $index->addDocuments(array(new \Elastica\Document($identifier, $value)));
+        $index->refresh();
     }
 
     /**
@@ -93,7 +96,10 @@ class Elasticsearch extends Registry
             );
         }
 
-        // something with elastica
+        $document = new \Elastica\Document($identifier, $value, '', $this->section);
+        $index = $this->getElasticaIndex($this->section);
+        $index->addDocuments(array($document));
+        $index->refresh();
     }
 
     /**
@@ -111,8 +117,6 @@ class Elasticsearch extends Registry
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
-
-        // something with elastica
     }
 
     /**
@@ -121,9 +125,13 @@ class Elasticsearch extends Registry
     public function destroy()
     {
         // close and delete index using elastica
-        $
+        $index = $this->getElasticaIndex($this->indexName);
 
         $this->registry = array();
+
+        $index = $this->getElasticaIndex($this->section);
+        $index->close();
+        $index->delete();
     }
 
     /**
@@ -166,13 +174,18 @@ class Elasticsearch extends Registry
      */
     protected function getElasticaIndex($indexName)
     {
-        if (empty($this->indexes[$indexName])) {
-
+        if (empty($this->registry[$indexName])) {
             $client = $this->getElasticaClient();
+            $this->registry[$indexName] = $client->getIndex($indexName);
 
-            $this->indexes[$indexName] = $client->getIndex($indexName);
+            $this->registry[$indexName]->create(
+                array(
+                    'number_of_shards' => 5,
+                    'number_of_replicas' => 1,
+                )
+            );
         }
 
-        return $this->indexes[$indexName];
+        return $this->registry[$indexName];
     }
 }

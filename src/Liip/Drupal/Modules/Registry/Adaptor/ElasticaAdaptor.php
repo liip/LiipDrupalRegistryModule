@@ -34,36 +34,36 @@ class ElasticaAdaptor
      * Adds a document to an index.
      *
      * @param string $indexName
-     * @param \Elastica\Document|array $value
+     * @param \Elastica\Document|array $document
      * @param string $identifier
-     * @param string $type
+     * @param string $typeName
      *
+     * @throws ElasticaAdaptorException
      * @return \Elastica\Document
      */
-    public function registerDocument($indexName, $value, $identifier = '', $type = '')
+    public function registerDocument($indexName, $document, $identifier = '', $typeName = '')
     {
-        if (!$value instanceof Document) {
-
-            Assertion::isArray($value, 'The value of the document to be added to the index has to be of type array.');
-            Assertion::notEmpty($value, 'The document data may not be empty.');
-
-            if (empty($type)) {
-                $type = $this->typeName;
-            }
-
-            $document = new Document($identifier, $value, $type, $indexName);
-        }
-
         $index = $this->getIndex($indexName);
+        $client = $index->getClient();
+        $type = $index->getType(
+            empty($typeName) ? $this->typeName : $typeName
+        );
+
+        if (!$document instanceof Document) {
+
+            Assertion::isArray($document, 'The value of the document to be added to the index has to be of type array.');
+            Assertion::notEmpty($document, 'The document data may not be empty.');
+
+            $document = new Document($identifier, $document);
+        }
 
         try {
 
-            $index->addDocuments(array($document));
+            $type->addDocuments(array($document));
             $index->refresh();
-        } catch (BulkResponseException $e) {
-            var_dump($e->getMessage());
 
-            // throw new ElasticaAdaptorException($e->getMessage(), $e->getCode(), $e);
+        } catch (BulkResponseException $e) {
+             throw new ElasticaAdaptorException($e->getMessage(), $e->getCode(), $e);
         }
 
         return $document;
@@ -91,29 +91,56 @@ class ElasticaAdaptor
      *
      * @param  integer $id document id
      * @param  array $data raw data for request body
-     * @param  string $index   index to update
-     * @param  string $type    type of index to update
+     * @param  string $indexName   index to update
+     * @param  string $typeName    type of index to update
      *
-     * @return boolean
+     * @throws ElasticaAdaptorException in case something when wrong while sending the request to elasticsearch.
+     * @return \Elastica\Document
      * @link http://www.elasticsearch.org/guide/reference/api/update.html
      */
-    public function updateDocument($id, array $data, $index, $type = '')
+    public function updateDocument($id, array $data, $indexName, $typeName = '')
     {
-        $client = $this->getClient();
+        $index = $this->getIndex($indexName);
+        $client = $index->getClient();
+        $type = $index->getType(
+          empty($typeName) ? $this->typeName : $typeName
+        );
 
-        if (empty($type)) {
-            $type = $this->typeName;
+        $response = $client->updateDocument($id, $data, $index->getName(), $type->getName());
+
+        if ($response->hasError()) {
+
+            $error = $this->normalizeError($response->getError());
+
+            throw new ElasticaAdaptorException(
+                $error->getMessage(),
+                $error->getCode(),
+                $error
+            );
         }
 
-        try {
-            $response = $client->updateDocument($id, $data, $index, $type);
+        $type->getIndex()->refresh();
 
-            return $response->hasError();
+        return $type->getDocument($id);
+    }
 
-        } catch (\Elastica\Exception\InvalidException $e) {
-
-            return false;
+    /**
+     * determines if the risen error is of type Exception.
+     *
+     * @param mixed $error
+     *
+     * @return ElasticaAdaptorException
+     */
+    public function normalizeError($error)
+    {
+        if ($error instanceof \Exception) {
+            return new ElasticaAdaptorException($error->getMessage(), $error->getCode(), $error);
         }
+
+        return new ElasticaAdaptorException(
+            sprintf('An error accord: %s', print_r($error, true)),
+            0
+        );
     }
 
     /**
