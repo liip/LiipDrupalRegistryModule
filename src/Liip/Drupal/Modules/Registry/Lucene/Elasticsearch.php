@@ -3,7 +3,9 @@ namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
+use Elastica\Exception\NotFoundException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
+use Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
 use Elastica\Client;
@@ -21,6 +23,11 @@ class Elasticsearch extends Registry
      */
     protected $registry;
 
+    /**
+     * @var \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor
+     */
+    protected $adaptor;
+
 
     /**
      * @param string $section
@@ -34,9 +41,6 @@ class Elasticsearch extends Registry
 
         parent::__construct($section, $dcc, $assertion);
 
-        // elastica will complain if the index name is not lowercase.
-        $this->section = strtolower($section);
-
         $this->init();
     }
 
@@ -47,6 +51,9 @@ class Elasticsearch extends Registry
      */
     public function init()
     {
+        // elastica will complain if the index name is not lowercase.
+        $this->section = strtolower($this->section);
+
         if(! empty($this->registry[$this->section])) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
@@ -54,7 +61,8 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->registry[$this->section] = $this->getElasticaIndex($this->section);
+        $this->adaptor = new ElasticaAdaptor();
+        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
     }
 
     /**
@@ -74,9 +82,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $index = $this->getElasticaIndex($this->section);
-        $index->addDocuments(array(new \Elastica\Document($identifier, $value)));
-        $index->refresh();
+        $this->adaptor->registerDocument($this->section, $value, $identifier);
     }
 
     /**
@@ -96,10 +102,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $document = new \Elastica\Document($identifier, $value, '', $this->section);
-        $index = $this->getElasticaIndex($this->section);
-        $index->addDocuments(array($document));
-        $index->refresh();
+        $this->adaptor->updateDocument($identifier, array('doc' => $value), $this->section);
     }
 
     /**
@@ -117,6 +120,8 @@ class Elasticsearch extends Registry
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
+
+        $this->adaptor->removeDocuments(array($identifier), $this->section);
     }
 
     /**
@@ -124,14 +129,9 @@ class Elasticsearch extends Registry
      */
     public function destroy()
     {
-        // close and delete index using elastica
-        $index = $this->getElasticaIndex($this->indexName);
-
         $this->registry = array();
 
-        $index = $this->getElasticaIndex($this->section);
-        $index->close();
-        $index->delete();
+        $this->adaptor->deleteIndex($this->section);
     }
 
     /**
@@ -151,41 +151,22 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Provides an elastica client.
+     * Verifies a document is in the elasticsearch index.
      *
-     * @return \Elastica_Client
+     * @param string $identifier
+     *
+     * @return bool|void
      */
-    protected function getElasticaClient()
+    public function isRegistered($identifier)
     {
-        if (empty($this->elasticaClient)) {
+        try {
+           $this->adaptor->getDocument($identifier, $this->section);
 
-            $this->elasticaClient = new Client();
+        } catch (NotFoundException $e) {
+
+            return false;
         }
 
-        return $this->elasticaClient;
-    }
-
-    /**
-     * Provides an elasticsearch index to attach documents to.
-     *
-     * @param string $indexName
-     *
-     * @return \Elastica\Index
-     */
-    protected function getElasticaIndex($indexName)
-    {
-        if (empty($this->registry[$indexName])) {
-            $client = $this->getElasticaClient();
-            $this->registry[$indexName] = $client->getIndex($indexName);
-
-            $this->registry[$indexName]->create(
-                array(
-                    'number_of_shards' => 5,
-                    'number_of_replicas' => 1,
-                )
-            );
-        }
-
-        return $this->registry[$indexName];
+        return true;
     }
 }
