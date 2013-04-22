@@ -155,7 +155,7 @@ class Elasticsearch extends Registry
      *
      * @param string $identifier
      *
-     * @return bool|void
+     * @return bool
      */
     public function isRegistered($identifier)
     {

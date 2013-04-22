@@ -37,9 +37,13 @@ class ElasticsearchTest extends RegistryTestCase
             $response = $index->delete();
 
             if ($response->hasError()) {
-                //$this->fail('Failed to tear down the test suite.');
 
-                print_r($response->getError());
+                throw new \PHPUnit_Framework_Exception(
+                    sprintf(
+                        'Failed to delete the elasticsearch index: %s',
+                        self::$indexName
+                    )
+                );
             }
         }
     }
