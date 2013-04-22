@@ -1,6 +1,8 @@
 <?php
 namespace Liip\Drupal\Modules\Registry\Tests;
 
+use Assert\Assertion;
+use Liip\Drupal\Modules\Registry\Lucene\Elasticsearch;
 use lapistano\ProxyObject\ProxyBuilder;
 
 abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
@@ -85,5 +87,39 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
         return $this->getMockBuilder('\\Assert\\Assertion')
             ->setMethods($methods)
             ->getMock();
+    }
+
+    /**
+     * @param $indexName
+     *
+     * @return Elasticsearch
+     */
+    protected function getRegistryObject($indexName)
+    {
+        $registry = new Elasticsearch(
+            $indexName,
+            $this->getDrupalCommonConnectorMock(array('t')),
+            new Assertion(),
+            array()
+        );
+
+        return $registry;
+    }
+
+    /**
+     * Provides a registry with a registered document.
+     *
+     * @param string $indexName
+     * @param string $documentId
+     * @param array $data
+     *
+     * @return Elasticsearch
+     */
+    protected function registerDocument($indexName, $documentId, array $data)
+    {
+        $registry = $this->getRegistryObject($indexName);
+        $registry->register($documentId, $data);
+
+        return $registry;
     }
 }
