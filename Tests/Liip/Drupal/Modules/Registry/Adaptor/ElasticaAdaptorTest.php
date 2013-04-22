@@ -39,9 +39,13 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             $response = $index->delete();
 
             if ($response->hasError()) {
-                //$this->fail('Failed to tear down the test suite.');
 
-                print_r($response->getError());
+                throw new \PHPUnit_Framework_Exception(
+                    sprintf(
+                        'Failed to delete the elasticsearch index: %s',
+                        self::$indexName
+                    )
+                );
             }
         }
     }
@@ -153,7 +157,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             ->method('hasError')
             ->will($this->returnValue(true));
 
-        $client = $this->getMockBuilder('\\Elastica\CLient')
+        $client = $this->getMockBuilder('\\Elastica\\Client')
             ->setMethods(array('updateDocument'))
             ->getMock();
         $client
@@ -205,7 +209,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         );
 
         $this->assertInstanceOf(
-            '\elastica\Document',
+            '\\Elastica\\Document',
             $adaptor->getDocument('toBeRetrieved',
                 self::$indexName)
         );
@@ -247,8 +251,8 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         $registry = new ElasticaAdaptor();
         $client = $registry->getClient();
 
-        $this->assertAttributeInstanceOf('\Elastica\Client', 'client', $registry);
-        $this->assertInstanceOf('\Elastica\Client', $client);
+        $this->assertAttributeInstanceOf('\\Elastica\\Client', 'client', $registry);
+        $this->assertInstanceOf('\\Elastica\\Client', $client);
     }
 
     /**

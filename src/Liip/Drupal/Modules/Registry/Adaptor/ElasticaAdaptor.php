@@ -88,13 +88,14 @@ class ElasticaAdaptor
     /**
      * Updates a elsaticsearch document.
      *
-     * @param  integer $id document id
+     * @param  integer|string $id document id
      * @param  array $data raw data for request body
      * @param  string $indexName   index to update
      * @param  string $typeName    type of index to update
      *
      * @throws ElasticaAdaptorException in case something when wrong while sending the request to elasticsearch.
      * @return \Elastica\Document
+     *
      * @link http://www.elasticsearch.org/guide/reference/api/update.html
      */
     public function updateDocument($id, array $data, $indexName, $typeName = '')
