@@ -15,6 +15,18 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     protected static $indexName = 'testindex';
 
     /**
+     * Determines if elasticsearch is installed. It makes no sense to run this tests if not.
+     */
+    protected function setUp()
+    {
+        if (!class_exists('\Elastica\Index')) {
+            $this->markTestSkipped(
+                'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
+            );
+        }
+    }
+
+    /**
      * restores the state of the elasticsearch cluster before the test suite run.
      */
     public static function tearDownAfterClass()
@@ -177,6 +189,25 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'foodStock',
             $rawData,
             self::$indexName
+        );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::getDocument
+     */
+    public function testGetDocument()
+    {
+        $adaptor = new ElasticaAdaptor();
+        $adaptor->registerDocument(
+            self::$indexName,
+            array('tux' => 'devil'),
+            'toBeRetrieved'
+        );
+
+        $this->assertInstanceOf(
+            '\elastica\Document',
+            $adaptor->getDocument('toBeRetrieved',
+                self::$indexName)
         );
     }
 

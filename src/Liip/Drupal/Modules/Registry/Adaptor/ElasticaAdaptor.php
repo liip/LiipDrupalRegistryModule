@@ -44,7 +44,6 @@ class ElasticaAdaptor
     public function registerDocument($indexName, $document, $identifier = '', $typeName = '')
     {
         $index = $this->getIndex($indexName);
-        $client = $index->getClient();
         $type = $index->getType(
             empty($typeName) ? $this->typeName : $typeName
         );
@@ -103,7 +102,7 @@ class ElasticaAdaptor
         $index = $this->getIndex($indexName);
         $client = $index->getClient();
         $type = $index->getType(
-          empty($typeName) ? $this->typeName : $typeName
+            empty($typeName) ? $this->typeName : $typeName
         );
 
         $response = $client->updateDocument($id, $data, $index->getName(), $type->getName());
@@ -120,6 +119,25 @@ class ElasticaAdaptor
         }
 
         $type->getIndex()->refresh();
+
+        return $type->getDocument($id);
+    }
+
+    /**
+     * Fetches the requested document from the index.
+     *
+     * @param string $id
+     * @param string $indexName
+     * @param string $typeName
+     *
+     * @return \Elastica\Document
+     */
+    public function getDocument($id, $indexName, $typeName = '')
+    {
+        $index = $this->getIndex($indexName);
+        $type = $index->getType(
+          empty($typeName) ? $this->typeName : $typeName
+        );
 
         return $type->getDocument($id);
     }
