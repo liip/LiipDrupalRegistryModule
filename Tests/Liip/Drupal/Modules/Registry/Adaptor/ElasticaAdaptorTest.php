@@ -76,32 +76,22 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
 
     /**
-     * @dataProvider registerDocumentDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::registerDocument
      */
-    public function testRegisterDocumentExpectingException($value)
+    public function testRegisterDocumentExpectingException()
     {
         $this->setExpectedException('\Assert\InvalidArgumentException');
 
         $adaptor = new ElasticaAdaptor();
-        $adaptor->registerDocument(self::$indexName, $value, 'myDocument');
-    }
-    public static function registerDocumentDataprovider()
-    {
-        return array(
-            'invalid data format (empty array)' => array('valid_id', array()),
-            'invalid data format (no array)' => array('valid_id', 'Tux'),
-            'invalid identifier' => array('invalidIdentifier', array('Tux' => 'bar'))
-        );
+        $adaptor->registerDocument(self::$indexName, array(), 'myDocument');
     }
 
     /**
+     * @dataProvider registerDocumentDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::registerDocument
      */
-    public function testRegisterDocument()
+    public function testRegisterDocument($value)
     {
-        $value = array('Mascott' => 'Tux');
-
         $adaptor = new ElasticaAdaptor();
 
         $this->assertInstanceOf(
@@ -109,38 +99,80 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             $adaptor->registerDocument(self::$indexName, $value)
         );
     }
+    public static function registerDocumentDataprovider()
+    {
+        return array(
+            'valid array data'   => array(array('Mascott' => 'Tux')),
+            'valid string data'  => array('Tux'),
+            'valid integer data' => array(1),
+            'valid double data'  => array(1.1)
+        );
+    }
 
     /**
+     * @dataProvider updateDocumentDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::updateDocument
      */
-    public function testUpdateDocument()
+    public function testUpdateDocument($expected, $id, $registerData, $updateData)
     {
         $adaptor = new ElasticaAdaptor();
         $adaptor->registerDocument(
             self::$indexName,
-            array('food' => 'Moules'),
-            'foodStock'
-        );
-
-        $rawData = array(
-            'doc' => array(
-                'food' => 'Crisps',
-                'nearNonFood' => 'Sponch'
-            )
+            $registerData,
+            $id
         );
 
         $updatedDocument = $adaptor->updateDocument(
-            'foodStock',
-            $rawData,
+            $id,
+            $updateData,
             self::$indexName
         );
 
         $data = $updatedDocument->getData();
 
-        $this->assertArrayHasKey('nearNonFood', $data);
-        $this->assertEquals('Sponch', $data['nearNonFood']);
-        $this->assertArrayHasKey('food', $data);
-        $this->assertEquals('Crisps', $data['food']);
+        $this->assertEquals($expected, $data);
+    }
+    public static function updateDocumentDataprovider()
+    {
+        return array(
+            'valid array data'   => array(
+                array(
+                    'food' => 'Crisps',
+                    'nearNonFood' => 'Sponch',
+                    'Mascott' => 'Tux'
+                ),
+                'foodStock',
+                array('Mascott' => 'Tux'),
+                array(
+                    'food' => 'Crisps',
+                    'nearNonFood' => 'Sponch'
+                ),
+            ),
+            'valid string data'  => array(
+                array(
+                    'string' => 'OUYA'
+                ),
+                'gamingConsoles',
+                'XBOX',
+                'OUYA',
+            ),
+            'valid integer data' => array(
+                array(
+                    'integer' => 9911
+                ),
+                "numbers",
+                1,
+                9911
+            ),
+            'valid double data'  => array(
+                array(
+                    'double' => 10.040401
+                ),
+                "doubles",
+                1.1,
+                10.040401
+            )
+        );
     }
 
     /**
@@ -213,6 +245,91 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             $adaptor->getDocument('toBeRetrieved',
                 self::$indexName)
         );
+    }
+
+    /**
+     * @dataProvider normalizeValueDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::normalizeValue
+     */
+    public function testNormalizeValue($value)
+    {
+        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
+            ->setMethods(array('normalizeValue'))
+            ->getProxy();
+
+        $valueArray = $adaptor->normalizeValue($value);
+        $key = gettype($value);
+
+        $this->assertInternalType('array', $valueArray);
+        $this->assertSame($value, $valueArray[$key]);
+        $this->assertEquals(1, sizeof($valueArray));
+    }
+    public static function normalizeValueDataprovider()
+    {
+        return array(
+            'number value' => array(1),
+            'float value'  => array(1.1),
+            'string value' => array('blob'),
+            'object value' => array(new \stdClass)
+        );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::normalizeValue
+     */
+    public function testNormalizeValueWithArray()
+    {
+        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
+            ->setMethods(array('normalizeValue'))
+            ->getProxy();
+
+        $array = array('value one', 'value two', 'value three');
+
+        $convertedArray = $adaptor->normalizeValue($array);
+
+        $this->assertSame($array, $convertedArray);
+    }
+
+    /**
+     * @dataProvider denormalizeArrayDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeArray
+     */
+    public function testDenormalizeArray($array)
+    {
+        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
+            ->setMethods(array('denormalizeArray'))
+            ->getProxy();
+
+        $value = $adaptor->denormalizeArray($array);
+        $valueType = gettype($value);
+
+        $this->assertSame($array[$valueType], $value);
+    }
+    public static function denormalizeArrayDataprovider()
+    {
+        return array(
+            'normalized number array' => array(array('integer' => 1)),
+            'normalized float array'  => array(array('double'  => 1.1)),
+            'normalized string array' => array(array('string'  => 'blob')),
+            'normalized object array' => array(array('object'  => new \stdClass))
+        );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeArray
+     */
+    public function testDenormalizeArrayWithNonArray()
+    {
+        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
+            ->setMethods(array('denormalizeArray'))
+            ->getProxy();
+
+        $notAnArray = 1;
+
+        $value = $adaptor->denormalizeArray($notAnArray);
+
+        $this->assertNotInternalType('array', $value);
+        $this->assertSame($notAnArray, $value);
     }
 
     /**

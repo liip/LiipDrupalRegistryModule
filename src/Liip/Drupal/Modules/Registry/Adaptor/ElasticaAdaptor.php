@@ -29,7 +29,6 @@ class ElasticaAdaptor
      */
     protected $typeName = 'collab';
 
-
     /**
      * Adds a document to an index.
      *
@@ -49,6 +48,9 @@ class ElasticaAdaptor
         );
 
         if (!$document instanceof Document) {
+            if (!is_array($document)) {
+                $document = $this->normalizeValue($document);
+            }
 
             Assertion::isArray($document, 'The value of the document to be added to the index has to be of type array.');
             Assertion::notEmpty($document, 'The document data may not be empty.');
@@ -89,7 +91,7 @@ class ElasticaAdaptor
      * Updates a elsaticsearch document.
      *
      * @param  integer|string $id document id
-     * @param  array $data raw data for request body
+     * @param  mixed $data raw data for request body
      * @param  string $indexName   index to update
      * @param  string $typeName    type of index to update
      *
@@ -98,7 +100,7 @@ class ElasticaAdaptor
      *
      * @link http://www.elasticsearch.org/guide/reference/api/update.html
      */
-    public function updateDocument($id, array $data, $indexName, $typeName = '')
+    public function updateDocument($id, $data, $indexName, $typeName = '')
     {
         $index = $this->getIndex($indexName);
         $client = $index->getClient();
@@ -106,7 +108,17 @@ class ElasticaAdaptor
             empty($typeName) ? $this->typeName : $typeName
         );
 
-        $response = $client->updateDocument($id, $data, $index->getName(), $type->getName());
+        // data array needs to have the key 'doc'
+        $rawData = array(
+            'doc' => $this->normalizeValue($data)
+        );
+
+        $response = $client->updateDocument(
+            $id,
+            $rawData,
+            $index->getName(),
+            $type->getName()
+        );
 
         if ($response->hasError()) {
 
@@ -141,6 +153,39 @@ class ElasticaAdaptor
         );
 
         return $type->getDocument($id);
+    }
+
+    /**
+     * Converts a non-array value to an array
+     *
+     * @param mixed $value    is the "non-array" value
+     * @return array          the normalized array
+     */
+    protected function normalizeValue($value) {
+        if (!is_array($value)) {
+            $key = gettype($value);
+            $array = array($key => $value);
+        } else {
+            return $value;
+        }
+
+        return $array;
+    }
+
+    /**
+     * Converts a normalized array to the original value
+     *
+     * @param array $array    the expected normalized array
+     * @return mixed          the normalized value
+     */
+    protected function denormalizeArray($array) {
+        if (is_array($array) && 1 == sizeof($array)) {
+            $value = array_pop($array);
+        } else {
+            return $array;
+        }
+
+        return $value;
     }
 
     /**
