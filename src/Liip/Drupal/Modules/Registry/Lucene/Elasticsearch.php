@@ -33,9 +33,8 @@ class Elasticsearch extends Registry
      * @param string $section
      * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
-     * @param array $options
      */
-    public function __construct($section, Common $dcc, Assertion $assertion, array $options)
+    public function __construct($section, Common $dcc, Assertion $assertion)
     {
         $this->validateElasticaDependency();
 
