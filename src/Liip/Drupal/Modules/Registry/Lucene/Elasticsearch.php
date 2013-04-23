@@ -54,8 +54,12 @@ class Elasticsearch extends Registry
         $this->section = strtolower($this->section);
 
         if(! empty($this->registry[$this->section])) {
+
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(@section)',
+                    array('@section' => $this->section)
+                ),
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
             );
         }
