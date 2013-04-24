@@ -87,3 +87,8 @@ $registry->unregister('eventItemRegister');
 $registry->destroy();
 
 ```
+
+## Supported Systems
+- D7 configuration array (facade to variable_get(), variable_set(), variable_del())
+- Elasticsearch (based on the elastica library)
+- Memory
