@@ -27,7 +27,7 @@ class ElasticsearchTest extends RegistryTestCase
     /**
      * restores the state of the elasticsearch cluster before the test suite run.
      */
-    public static function tearDownAfterClass()
+    public function tearDown()
     {
         $client =  new Client();
         $index = new Index($client, self::$indexName);
@@ -108,7 +108,7 @@ class ElasticsearchTest extends RegistryTestCase
      * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::register
      */
-    public function testRegisterExpecttingException()
+    public function testRegisterExpectingException()
     {
         $registry =  $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
         $registry->register('toRegister', array('automotive' => 'train'));
@@ -119,16 +119,12 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testReplace()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'ToReplace', array('devil' => 'Debian'));
+        $registry = $this->registerDocument(self::$indexName, 'ToReplace', array('devil' => 'Debian'));
         $registry->replace('ToReplace', array('devil' => 'Tux'));
-
-        $content = $registry->getContent();
-        $index = $content[self::$indexName];
-        $type = $index->getType('collab');
 
         $this->assertEquals(
             array('devil' => 'Tux'),
-            $type->getDocument('ToReplace')->getData()
+            $registry->getContentById('ToReplace')
         );
     }
 
@@ -152,12 +148,8 @@ class ElasticsearchTest extends RegistryTestCase
         $registry =  $this->registerDocument(self::$indexName, 'toUnregister', array('devil' => 'Debian'));
         $registry->unregister('toUnregister');
 
-        $content = $registry->getContent();
-        $index = $content[self::$indexName];
-        $type = $index->getType('collab');
-
         $this->setExpectedException('\\Elastica\\Exception\\NotFoundException');
-        $doc = $type->getDocument('toUnregister');
+        $content = $registry->getContentById('toUnregister');
     }
 
     /**
@@ -180,7 +172,11 @@ class ElasticsearchTest extends RegistryTestCase
         $registry->destroy();
 
         $this->assertAttributeEmpty('registry', $registry);
-        $this->assertEmpty($registry->getContent());
+
+        $client = new Client();
+        $index = $client->getIndex(self::$indexName);
+
+        $this->assertFalse($index->exists());
     }
 
     /**
@@ -202,5 +198,52 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertTrue($registry->isRegistered('toGoodToBeTrue'));
         $this->assertFalse($registry->isRegistered('isNotRegistered'));
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContent
+     */
+    public function testGetContent()
+    {
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContent', array('tux' => 'linus'));
+
+        $this->assertEquals(
+            array(
+                'toReadContent'  => array('tux' => 'linus'),
+            ),
+            $registry->getContent());
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentById
+     */
+    public function testGetContentById()
+    {
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', array('tux' => 'linus'));
+
+        $this->assertEquals(array('tux' => 'linus'), $registry->getContentById('toReadContentByIdFrom'));
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentByIds
+     */
+    public function testGetContentByIds()
+    {
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linus'));
+        $registry->register('toReadContentByIds1', array('Foo' => 'bar'));
+        $registry->register('toReadContentByIds2', array('John' => 'Doe'));
+
+        $this->assertEquals(
+            array(
+                'toReadContentByIds' => array('tux' => 'linus'),
+                'toReadContentByIds1' => array('Foo' => 'bar')
+            ),
+            $registry->getContentByIds(
+                array(
+                    'toReadContentByIds',
+                    'toReadContentByIds1'
+                )
+            )
+        );
     }
 }
