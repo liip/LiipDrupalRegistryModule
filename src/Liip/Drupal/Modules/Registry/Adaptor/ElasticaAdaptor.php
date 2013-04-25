@@ -1,18 +1,15 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: lapistano
- * Date: 4/17/13
- * Time: 10:15 AM
- * To change this template use File | Settings | File Templates.
- */
-
 namespace Liip\Drupal\Modules\Registry\Adaptor;
 
 use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Document;
 use Elastica\Exception\BulkResponseException;
+use Elastica\Index;
+use Elastica\Query;
+use Elastica\Query\MatchAll;
+use Elastica\Result;
+use Elastica\Search;
 
 class ElasticaAdaptor
 {
@@ -156,6 +153,47 @@ class ElasticaAdaptor
     }
 
     /**
+     * Provides a list of all documents of the given index.
+     *
+     * @param \Elastica\Index $index
+     *
+     * @return array
+     */
+    public function getDocuments(Index $index)
+    {
+        $search = new Search($index->getClient());
+        $search->addIndex($index);
+
+        $query = new Query(new MatchAll());
+        $resultSet = $search->search($query);
+        $results = $resultSet->getResults();
+
+        return $this->extractData($results);
+    }
+
+    /**
+     * Extracts information from a nested result set.
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    protected function extractData(array $data)
+    {
+        $converted = array();
+
+        foreach($data as $value) {
+
+            if ($value instanceof Result) {
+
+                $converted[$value->getId()] = $value->getData();
+            }
+        }
+
+        return $converted;
+    }
+
+    /**
      * Converts a non-array value to an array
      *
      * @param mixed $value    is the "non-array" value
@@ -178,7 +216,7 @@ class ElasticaAdaptor
      * @param array $array    the expected normalized array
      * @return mixed          the normalized value
      */
-    protected function denormalizeArray($array) {
+    protected function denormalizeValue($array) {
         if (is_array($array) && 1 == sizeof($array)) {
             $value = array_pop($array);
         } else {
@@ -253,7 +291,7 @@ class ElasticaAdaptor
 
     /**
      * Provides an elastica client.
-     * @return \Elastica_Client
+     * @return \Elastica\Client
      */
     public function getClient()
     {

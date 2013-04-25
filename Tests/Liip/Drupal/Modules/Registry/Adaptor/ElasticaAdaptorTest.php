@@ -5,6 +5,8 @@ namespace Liip\Drupal\Modules\Registry\Adaptor;
 use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Index;
+use Elastica\Result;
+use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticaAdaptorFunctionalTest extends RegistryTestCase
@@ -29,7 +31,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     /**
      * restores the state of the elasticsearch cluster before the test suite run.
      */
-    public static function tearDownAfterClass()
+    public function tearDown()
     {
         $client =  new Client();
         $index = new Index($client, self::$indexName);
@@ -248,6 +250,33 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
 
     /**
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::getDocuments
+     */
+    public function testGetDocuments()
+    {
+        $adaptor = new ElasticaAdaptor();
+        $adaptor->registerDocument(
+            self::$indexName,
+            array('tux' => 'devil'),
+            'toBeRetrieved'
+        );
+        $adaptor->registerDocument(
+            self::$indexName,
+            array('mascott' => 'Gnu'),
+            'toBeRetrieved2'
+        );
+
+        $this->assertEquals(
+            array(
+                'toBeRetrieved' => array('tux' => 'devil'),
+                'toBeRetrieved2' => array('mascott' => 'Gnu'),
+            ),
+            $adaptor->getDocuments($adaptor->getIndex(self::$indexName))
+        );
+
+    }
+
+    /**
      * @dataProvider normalizeValueDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::normalizeValue
      */
@@ -292,15 +321,15 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
 
     /**
      * @dataProvider denormalizeArrayDataprovider
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeArray
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeValue
      */
     public function testDenormalizeArray($array)
     {
         $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
-            ->setMethods(array('denormalizeArray'))
+            ->setMethods(array('denormalizeValue'))
             ->getProxy();
 
-        $value = $adaptor->denormalizeArray($array);
+        $value = $adaptor->denormalizeValue($array);
         $valueType = gettype($value);
 
         $this->assertSame($array[$valueType], $value);
@@ -316,17 +345,17 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
 
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeArray
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeValue
      */
     public function testDenormalizeArrayWithNonArray()
     {
         $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
-            ->setMethods(array('denormalizeArray'))
+            ->setMethods(array('denormalizeValue'))
             ->getProxy();
 
         $notAnArray = 1;
 
-        $value = $adaptor->denormalizeArray($notAnArray);
+        $value = $adaptor->denormalizeValue($notAnArray);
 
         $this->assertNotInternalType('array', $value);
         $this->assertSame($notAnArray, $value);
@@ -402,11 +431,65 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     public function testDeleteIndex()
     {
         $adaptor = new ElasticaAdaptor();
+        $adaptor->getIndex(self::$indexName);
+
         $adaptor->deleteIndex(self::$indexName);
 
         $client = new Client();
         $index = $client->getIndex(self::$indexName);
 
         $this->assertFalse($index->exists());
+    }
+
+    /**
+     * @dataProvider extractDataDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::extractData
+     */
+    public function testExtractData($expected, $value)
+    {
+        $registry = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
+            ->setMethods(array('extractData'))
+            ->getProxy();
+
+        $this->assertEquals($expected, $registry->extractData($value));
+    }
+    public static function extractDataDataprovider()
+    {
+        return array(
+            'Data of type array' => array(
+                array(
+                    'WorldOfOs' => array('mascott' => 'tux'),
+                    'GuggiMenu' => array('Dish Of Day' => 'Salmon al limone'),
+                ),
+                array(
+                    0 => new Result(array(
+                        '_index' => 'registry_worlds',
+                        '_type' => 'collab',
+                        '_id' => 'WorldOfOs',
+                        '_score' => 1,
+                        '_source'=> array('mascott' => 'tux'),
+                    )),
+                    1 => new Result(array(
+                        '_index' => 'registry_worlds',
+                        '_type' => 'collab',
+                        '_id' => 'GuggiMenu',
+                        '_score' => 1,
+                        '_source'=> array('Dish Of Day' => 'Salmon al limone'),
+                    )),
+                )
+            ),
+            'Data of type string' => array(
+                array('WorldOfOs' => 'this is a string'),
+                array(
+                    0 => new Result(array(
+                        '_index' => 'registry_worlds',
+                        '_type' => 'collab',
+                        '_id' => 'WorldOfOs',
+                        '_score' => 1,
+                        '_source'=> 'this is a string',
+                    )),
+                )
+            ),
+        );
     }
 }

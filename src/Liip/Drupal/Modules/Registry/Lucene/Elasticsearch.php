@@ -4,11 +4,11 @@ namespace Liip\Drupal\Modules\Registry\Lucene;
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use Elastica\Exception\NotFoundException;
+use Elastica\Exception\ResponseException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
-use Elastica\Client;
 
 
 class Elasticsearch extends Registry
@@ -105,7 +105,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->updateDocument($identifier, array('doc' => $value), $this->section);
+        $this->adaptor->updateDocument($identifier, $value, $this->section);
     }
 
     /**
@@ -171,5 +171,31 @@ class Elasticsearch extends Registry
         }
 
         return true;
+    }
+
+    /**
+     * Provides the current set of registered items.
+     *
+     * @return array
+     */
+    public function getContent()
+    {
+        return $this->adaptor->getDocuments($this->registry[$this->section]);
+    }
+
+    /**
+     * Finds the item corresponding to the provided identifier in the registry.
+     *
+     * @param string $identifier
+     * @param null $default
+     *
+     * @return array
+     */
+    public function getContentById($identifier, $default = null)
+    {
+        $index = $this->registry[$this->section];
+        $doc = $this->adaptor->getDocument($identifier, $index->getName());
+
+        return $doc->getData();
     }
 }
