@@ -295,11 +295,18 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
     public static function normalizeValueDataprovider()
     {
+        $class = new \stdClass();
+        $class->content = array('foo');
+        $class->memeber = 'Tux';
+        $class->instance = new \stdClass();
+        $class->number = 1;
+
         return array(
             'number value' => array(1),
             'float value'  => array(1.1),
             'string value' => array('blob'),
-            'object value' => array(new \stdClass)
+            'empty object value' => array(new \stdClass),
+            'object value' => array($class),
         );
     }
 
