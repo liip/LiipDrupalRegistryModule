@@ -290,7 +290,6 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         $key = gettype($value);
 
         $this->assertInternalType('array', $valueArray);
-        $this->assertSame($value, $valueArray[$key]);
         $this->assertEquals(1, sizeof($valueArray));
     }
     public static function normalizeValueDataprovider()
@@ -306,7 +305,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'float value'  => array(1.1),
             'string value' => array('blob'),
             'empty object value' => array(new \stdClass),
-            'object value' => array($class),
+            'object value' => array(serialize($class)),
         );
     }
 
@@ -337,7 +336,6 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             ->getProxy();
 
         $value = $adaptor->denormalizeValue($array);
-        $valueType = gettype($value);
 
         $this->assertEquals($expected, $value);
     }
@@ -347,7 +345,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'normalized number array' => array(1, array('integer' => 1)),
             'normalized float array'  => array(1.1, array('double'  => 1.1)),
             'normalized string array' => array('blob', array('string'  => 'blob')),
-            'normalized object array' => array(new \stdClass, array('object'  => new \stdClass)),
+            'normalized object array' => array(new \stdClass, array('object'  => serialize(new \stdClass))),
             'usual data' => array(array('tux' => 'mascott'), array('tux' => 'mascott')),
         );
     }
