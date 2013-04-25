@@ -202,7 +202,17 @@ class ElasticaAdaptor
     protected function normalizeValue($value) {
         if (!is_array($value)) {
             $key = gettype($value);
+
+            /*
+             * seems json_encode() has troubles serializing complex PHP objects.
+             * Serializing before hand does solve this.
+             */
+            if ('object' == $key) {
+                $value = serialize($value);
+            }
+
             $array = array($key => $value);
+
         } else {
             return $value;
         }
@@ -226,9 +236,22 @@ class ElasticaAdaptor
             $ofType = gettype($value);
 
             if (array_key_exists($ofType, $data)) {
+
                 $value = $data[$ofType];
+
+            } else if (array_key_exists('object', $data)) {
+
+                /*
+                 * seems json_encode() has troubles serializing complex PHP objects.
+                 * Serializing before hand does solve this.
+                 * This forces a unserialize() when denormalizing.
+                 */
+                $value = unserialize($data['object']);
+
             } else {
+
                 $value = $data;
+
             }
 
         } else {
