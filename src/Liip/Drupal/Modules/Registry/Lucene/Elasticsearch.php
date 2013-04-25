@@ -194,8 +194,6 @@ class Elasticsearch extends Registry
     public function getContentById($identifier, $default = null)
     {
         $index = $this->registry[$this->section];
-        $doc = $this->adaptor->getDocument($identifier, $index->getName());
-
-        return $doc->getData();
+        return $this->adaptor->getDocument($identifier, $index->getName());
     }
 }

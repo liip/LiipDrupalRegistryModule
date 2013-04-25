@@ -149,7 +149,7 @@ class ElasticaAdaptor
           empty($typeName) ? $this->typeName : $typeName
         );
 
-        return $type->getDocument($id);
+        return $this->denormalizeValue($type->getDocument($id)->getData());
     }
 
     /**
@@ -168,7 +168,7 @@ class ElasticaAdaptor
         $resultSet = $search->search($query);
         $results = $resultSet->getResults();
 
-        return $this->extractData($results);
+        return $this->denormalizeValue($this->extractData($results));
     }
 
     /**
@@ -213,14 +213,26 @@ class ElasticaAdaptor
     /**
      * Converts a normalized array to the original value
      *
-     * @param array $array    the expected normalized array
+     * @param array $data    the expected normalized array
      * @return mixed          the normalized value
      */
-    protected function denormalizeValue($array) {
-        if (is_array($array) && 1 == sizeof($array)) {
-            $value = array_pop($array);
+    protected function denormalizeValue($data) {
+
+        if (is_array($data) && 1 == sizeof($data)) {
+
+            $clone = $data;
+            $value = array_pop($clone);
+
+            $ofType = gettype($value);
+
+            if (array_key_exists($ofType, $data)) {
+                $value = $data[$ofType];
+            } else {
+                $value = $data;
+            }
+
         } else {
-            return $array;
+            return $data;
         }
 
         return $value;

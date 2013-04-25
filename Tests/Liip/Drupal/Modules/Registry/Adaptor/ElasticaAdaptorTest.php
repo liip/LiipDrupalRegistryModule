@@ -242,8 +242,8 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'toBeRetrieved'
         );
 
-        $this->assertInstanceOf(
-            '\\Elastica\\Document',
+        $this->assertEquals(
+            array('tux' => 'devil'),
             $adaptor->getDocument('toBeRetrieved',
                 self::$indexName)
         );
@@ -323,7 +323,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      * @dataProvider denormalizeArrayDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor::denormalizeValue
      */
-    public function testDenormalizeArray($array)
+    public function testDenormalizeArray($expected, $array)
     {
         $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\ElasticaAdaptor')
             ->setMethods(array('denormalizeValue'))
@@ -332,15 +332,16 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         $value = $adaptor->denormalizeValue($array);
         $valueType = gettype($value);
 
-        $this->assertSame($array[$valueType], $value);
+        $this->assertEquals($expected, $value);
     }
     public static function denormalizeArrayDataprovider()
     {
         return array(
-            'normalized number array' => array(array('integer' => 1)),
-            'normalized float array'  => array(array('double'  => 1.1)),
-            'normalized string array' => array(array('string'  => 'blob')),
-            'normalized object array' => array(array('object'  => new \stdClass))
+            'normalized number array' => array(1, array('integer' => 1)),
+            'normalized float array'  => array(1.1, array('double'  => 1.1)),
+            'normalized string array' => array('blob', array('string'  => 'blob')),
+            'normalized object array' => array(new \stdClass, array('object'  => new \stdClass)),
+            'usual data' => array(array('tux' => 'mascott'), array('tux' => 'mascott')),
         );
     }
 
