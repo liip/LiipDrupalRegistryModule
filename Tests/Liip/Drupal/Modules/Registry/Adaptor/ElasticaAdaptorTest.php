@@ -294,18 +294,10 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
     public static function normalizeValueDataprovider()
     {
-        $class = new \stdClass();
-        $class->content = array('foo');
-        $class->memeber = 'Tux';
-        $class->instance = new \stdClass();
-        $class->number = 1;
-
         return array(
             'number value' => array(1),
             'float value'  => array(1.1),
             'string value' => array('blob'),
-            'empty object value' => array(new \stdClass),
-            'object value' => array(serialize($class)),
         );
     }
 
@@ -345,7 +337,6 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'normalized number array' => array(1, array('integer' => 1)),
             'normalized float array'  => array(1.1, array('double'  => 1.1)),
             'normalized string array' => array('blob', array('string'  => 'blob')),
-            'normalized object array' => array(new \stdClass, array('object'  => serialize(new \stdClass))),
             'usual data' => array(array('tux' => 'mascott'), array('tux' => 'mascott')),
         );
     }
