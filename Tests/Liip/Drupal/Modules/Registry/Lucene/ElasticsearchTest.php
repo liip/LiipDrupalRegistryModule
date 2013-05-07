@@ -68,24 +68,14 @@ class ElasticsearchTest extends RegistryTestCase
     public function testInit()
     {
         $registry = $this->getRegistryObject(self::$indexName);
+        $registry->destroy();
+        $registry->init();
 
         $this->assertAttributeEquals(self::$indexName, 'section', $registry);
         $this->assertInstanceOf(
             '\Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor',
             $this->readAttribute($registry, 'adaptor')
         );
-    }
-
-    /**
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::init
-     */
-    public function testInitExpectingException()
-    {
-        $registry = $this->getRegistryObject(self::$indexName);
-
-        $this->setExpectedException('\\Liip\\Drupal\\Modules\\Registry\\RegistryException');
-
-        $registry->init();
     }
 
     /**

@@ -37,10 +37,15 @@ class Elasticsearch extends Registry
     public function __construct($section, Common $dcc, Assertion $assertion)
     {
         $this->validateElasticaDependency();
+        $this->adaptor = new ElasticaAdaptor();
 
         parent::__construct($section, $dcc, $assertion);
 
-        $this->init();
+        // elastica will complain if the index name is not lowercase.
+        $this->section = strtolower($this->section);
+
+        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
+
     }
 
     /**
@@ -50,22 +55,10 @@ class Elasticsearch extends Registry
      */
     public function init()
     {
-        // elastica will complain if the index name is not lowercase.
-        $this->section = strtolower($this->section);
+        if (empty($this->registry[$this->section])) {
 
-        if(! empty($this->registry[$this->section])) {
-
-            throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(@section)',
-                    array('@section' => $this->section)
-                ),
-                RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
-            );
+            $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
         }
-
-        $this->adaptor = new ElasticaAdaptor();
-        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
     }
 
     /**
