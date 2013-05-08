@@ -73,7 +73,7 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertAttributeEquals(self::$indexName, 'section', $registry);
         $this->assertInstanceOf(
-            '\Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor',
+            '\Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor',
             $this->readAttribute($registry, 'adaptor')
         );
     }

@@ -2,11 +2,9 @@
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Assert\Assertion;
-use Assert\InvalidArgumentException;
 use Elastica\Exception\NotFoundException;
-use Elastica\Exception\ResponseException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
-use Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor;
+use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
 
@@ -37,7 +35,7 @@ class Elasticsearch extends Registry
     public function __construct($section, Common $dcc, Assertion $assertion)
     {
         $this->validateElasticaDependency();
-        $this->adaptor = new ElasticaAdaptor();
+        $this->adaptor = $this->getElasticaAdaptor();
 
         parent::__construct($section, $dcc, $assertion);
 
@@ -188,5 +186,30 @@ class Elasticsearch extends Registry
     {
         $index = $this->registry[$this->section];
         return $this->adaptor->getDocument($identifier, $index->getName());
+    }
+
+    /**
+     * Provides an instance ot the adaptor to the Elastica library.
+     *
+     * @return ElasticaAdaptor
+     */
+    public function getElasticaAdaptor()
+    {
+        if (empty($this->adaptor)) {
+
+            $this->adaptor = new ElasticaAdaptor();
+        }
+
+        return $this->adaptor;
+    }
+
+    /**
+     * Provides the ability to influence the used adaptor to whatever elasticsearch library.
+     *
+     * @param ElasticaAdaptor $adaptor
+     */
+    public function setElasticaAdaptor(ElasticaAdaptor $adaptor)
+    {
+        $this->adaptor = $adaptor;
     }
 }

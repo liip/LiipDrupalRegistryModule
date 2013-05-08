@@ -1,7 +1,8 @@
 <?php
-namespace Liip\Drupal\Modules\Registry\Adaptor;
+namespace Liip\Drupal\Modules\Registry\Adaptor\Lucene;
 
 use Assert\Assertion;
+use Assert\InvalidArgumentException;
 use Elastica\Client;
 use Elastica\Document;
 use Elastica\Exception\BulkResponseException;
@@ -10,8 +11,9 @@ use Elastica\Query;
 use Elastica\Query\MatchAll;
 use Elastica\Result;
 use Elastica\Search;
+use Liip\Drupal\Modules\Registry\Adaptor\AdaptorException;
 
-class ElasticaAdaptor
+class ElasticaAdaptor implements AdaptorInterface
 {
     /**
      * @var \Elastica\Index[]
@@ -34,7 +36,7 @@ class ElasticaAdaptor
      * @param string $identifier
      * @param string $typeName
      *
-     * @throws ElasticaAdaptorException
+     * @throws AdaptorException
      * @return \Elastica\Document
      */
     public function registerDocument($indexName, $document, $identifier = '', $typeName = '')
@@ -61,7 +63,7 @@ class ElasticaAdaptor
             $index->refresh();
 
         } catch (BulkResponseException $e) {
-             throw new ElasticaAdaptorException($e->getMessage(), $e->getCode(), $e);
+             throw new AdaptorException($e->getMessage(), $e->getCode(), $e);
         }
 
         return $document;
@@ -92,7 +94,7 @@ class ElasticaAdaptor
      * @param  string $indexName   index to update
      * @param  string $typeName    type of index to update
      *
-     * @throws ElasticaAdaptorException in case something when wrong while sending the request to elasticsearch.
+     * @throws AdaptorException in case something when wrong while sending the request to elasticsearch.
      * @return \Elastica\Document
      *
      * @link http://www.elasticsearch.org/guide/reference/api/update.html
@@ -121,7 +123,7 @@ class ElasticaAdaptor
 
             $error = $this->normalizeError($response->getError());
 
-            throw new ElasticaAdaptorException(
+            throw new AdaptorException(
                 $error->getMessage(),
                 $error->getCode(),
                 $error
@@ -158,9 +160,16 @@ class ElasticaAdaptor
      * @param \Elastica\Index $index
      *
      * @return array
+     * @throws \Assert\InvalidArgumentException
      */
-    public function getDocuments(Index $index)
+    public function getDocuments($index)
     {
+        Assertion::isInstanceOf(
+            $index,
+            '\Elastica\Index',
+            'The given index must be of type \Elastica\Index !'
+        );
+
         $search = new Search($index->getClient());
         $search->addIndex($index);
 
@@ -244,15 +253,15 @@ class ElasticaAdaptor
      *
      * @param mixed $error
      *
-     * @return ElasticaAdaptorException
+     * @return AdaptorException
      */
     public function normalizeError($error)
     {
         if ($error instanceof \Exception) {
-            return new ElasticaAdaptorException($error->getMessage(), $error->getCode(), $error);
+            return new AdaptorException($error->getMessage(), $error->getCode(), $error);
         }
 
-        return new ElasticaAdaptorException(
+        return new AdaptorException(
             sprintf('An error accord: %s', print_r($error, true)),
             0
         );
