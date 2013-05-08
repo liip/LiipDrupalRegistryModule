@@ -236,4 +236,21 @@ class ElasticsearchTest extends RegistryTestCase
             )
         );
     }
+
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setESAdaptor
+     */
+    public function testGetEsAdaptor()
+    {
+        $esAdaptorFake = $this->getMockBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\AdaptorInterface')
+            ->getMockForAbstractClass();
+
+        $registry = $this->getRegistryObject(self::$indexName);
+        $registry->setESAdaptor($esAdaptorFake);
+
+        $this->assertSame($esAdaptorFake, $registry->getESAdaptor());
+
+    }
 }
