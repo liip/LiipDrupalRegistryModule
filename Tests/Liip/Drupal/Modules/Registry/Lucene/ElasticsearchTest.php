@@ -95,6 +95,23 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::register
+     */
+    public function testRegisterWithType()
+    {
+        $typeName = 'customTypeName';
+        $registry =  $this->registerDocument(self::$indexName, 'toRegister2', array('foo' => 'bar'), $typeName);
+
+        $attribRegistry = $this->readAttribute($registry, 'registry');
+        $type = $attribRegistry[self::$indexName]->getType($typeName);
+
+        $this->assertEquals(
+            array('foo' => 'bar'),
+            $type->getDocument('toRegister2')->getData()
+        );
+    }
+
+    /**
      * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::register
      */

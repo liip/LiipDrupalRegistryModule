@@ -121,10 +121,10 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
      *
      * @return Elasticsearch
      */
-    protected function registerDocument($indexName, $documentId, array $data)
+    protected function registerDocument($indexName, $documentId, array $data, $typename = '')
     {
         $registry = $this->getRegistryObject($indexName);
-        $registry->register($documentId, $data);
+        $registry->register($documentId, $data, $typename);
 
         return $registry;
     }
