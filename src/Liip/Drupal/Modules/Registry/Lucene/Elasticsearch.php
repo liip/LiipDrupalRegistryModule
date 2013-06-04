@@ -68,7 +68,7 @@ class Elasticsearch extends Registry
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
-    public function register($identifier, $value)
+    public function register($identifier, $value, $type = "")
     {
         if ($this->isRegistered($identifier)) {
             throw new RegistryException(
@@ -77,7 +77,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->registerDocument($this->section, $value, $identifier);
+        $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
     }
 
     /**
