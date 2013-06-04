@@ -99,14 +99,15 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testRegisterWithType()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toRegister', array('foo' => 'bar'), 'customTypeName');
+        $typeName = 'customTypeName';
+        $registry =  $this->registerDocument(self::$indexName, 'toRegister2', array('foo' => 'bar'), $typeName);
 
         $attribRegistry = $this->readAttribute($registry, 'registry');
-        $type = $attribRegistry[self::$indexName]->getType('customTypeName');
+        $type = $attribRegistry[self::$indexName]->getType($typeName);
 
         $this->assertEquals(
             array('foo' => 'bar'),
-            $type->getDocument('toRegister')->getData()
+            $type->getDocument('toRegister2')->getData()
         );
     }
 
