@@ -70,7 +70,7 @@ class Elasticsearch extends Registry
      */
     public function register($identifier, $value, $type = "")
     {
-        if ($this->isRegistered($identifier)) {
+        if ($this->isRegistered($identifier, $type)) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
@@ -88,16 +88,16 @@ class Elasticsearch extends Registry
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
-    public function replace($identifier, $value)
+    public function replace($identifier, $value, $type = "")
     {
-        if (!$this->isRegistered($identifier)) {
+        if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT),
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
 
-        $this->adaptor->updateDocument($identifier, $value, $this->section);
+        $this->adaptor->updateDocument($identifier, $value, $this->section, $type);
     }
 
     /**
@@ -107,16 +107,16 @@ class Elasticsearch extends Registry
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
-    public function unregister($identifier)
+    public function unregister($identifier, $type = "")
     {
-        if (!$this->isRegistered($identifier)) {
+        if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::UNKNOWN_IDENTIFIER_TEXT),
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
 
-        $this->adaptor->removeDocuments(array($identifier), $this->section);
+        $this->adaptor->removeDocuments(array($identifier), $this->section, $type);
     }
 
     /**
@@ -152,13 +152,11 @@ class Elasticsearch extends Registry
      *
      * @return bool
      */
-    public function isRegistered($identifier)
+    public function isRegistered($identifier, $type = "")
     {
         try {
-           $this->adaptor->getDocument($identifier, $this->section);
-
+            $this->adaptor->getDocument($identifier, $this->section, $type);
         } catch (NotFoundException $e) {
-
             return false;
         }
 
