@@ -136,6 +136,26 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::register
+     */
+    public function testReplaceWithType()
+    {
+        $typeName = 'newTypeName';
+        $identifier = 'toReplaceWithType';
+
+        $registry = $this->registerDocument(self::$indexName, $identifier, array('devil' => 'old'), $typeName);
+        $registry->replace($identifier, array('devil' => 'new'), $typeName);
+
+        $attribRegistry = $this->readAttribute($registry, 'registry');
+        $type = $attribRegistry[self::$indexName]->getType($typeName);
+
+        $this->assertEquals(
+            array('devil' => 'new'),
+            $type->getDocument($identifier)->getData()
+        );
+    }
+
+    /**
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::replace
      */
     public function testReplaceExpectingRegistgryException()
