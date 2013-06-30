@@ -237,13 +237,31 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
+     * @dataProvider getContentByIdDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentById
      */
-    public function testGetContentById()
+    public function testGetContentById($expected, $value)
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', array('tux' => 'linus'));
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', $value);
 
-        $this->assertEquals(array('tux' => 'linus'), $registry->getContentById('toReadContentByIdFrom'));
+        $this->assertEquals($expected, $registry->getContentById('toReadContentByIdFrom'));
+    }
+    public static function getContentByIdDataprovider()
+    {
+        return array(
+            'store assoc array' => array(
+                array('tux' => 'linus'),
+                array('tux' => 'linus')
+            ),
+            'store numbered array' => array(
+                array('tux', 'linus'),
+                array('tux', 'linus')
+            ),
+            'store object' => array(
+                (object) array('tux' => 'linus'),
+                (object) array('tux' => 'linus')
+            ),
+        );
     }
 
     /**
@@ -283,5 +301,56 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertSame($esAdaptorFake, $registry->getESAdaptor());
 
+    }
+
+    /**
+     * @dataProvider determineContentTypeMappingDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::determineContentTypeMapping
+     */
+    public function testDetermineContentTypeMapping($expected, $id, $value)
+    {
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setMethods(array('determineContentTypeMapping'))
+            ->getProxy();
+
+        $registry->determineContentTypeMapping($id, $value);
+
+        $this->assertAttributeEquals($expected, 'typeMap', $registry);
+    }
+    public static function determineContentTypeMappingDataprovider()
+    {
+        return array(
+            'type is string' => array(array('tux' => 'string'), 'tux', 'foo'),
+            'type is array' => array(array('tux' => 'array'), 'tux', array('foo')),
+            'type is object' => array(array('tux' => 'object'), 'tux', new \stdClass),
+            'type is instance of a class' => array(array('tux' => 'object'), 'tux', new \ArrayObject()),
+        );
+    }
+
+    /**
+     * @dataProvider contentAsArrayDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::contentAsArray
+     */
+    public function testContentAsArray($expected, $id)
+    {
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setMethods(array('contentAsArray'))
+            ->setProperties(array('typeMap'))
+            ->getProxy();
+        $registry->typeMap = array(
+            'tux array' => 'array',
+            'gnu object' => 'object'
+        );
+
+        $this->assertSame($expected, $registry->contentAsArray($id));
+    }
+    public static function contentAsArrayDataprovider()
+    {
+        return array(
+            'id represents array' => array(true, 'tux array'),
+            'id represents object' => array(false, 'gnu object'),
+        );
     }
 }
