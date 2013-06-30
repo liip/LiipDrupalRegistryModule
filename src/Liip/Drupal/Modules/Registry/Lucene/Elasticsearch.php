@@ -38,13 +38,12 @@ class Elasticsearch extends Registry
         $this->validateElasticaDependency();
         $this->adaptor = $this->getESAdaptor();
 
-        parent::__construct($section, $dcc, $assertion);
-
         // elastica will complain if the index name is not lowercase.
         $this->section = strtolower($this->section);
 
-        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
+        parent::__construct($section, $dcc, $assertion);
 
+        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
     }
 
     /**
@@ -65,19 +64,20 @@ class Elasticsearch extends Registry
      *
      * @param string $identifier
      * @param mixed $value
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
     public function register($identifier, $value, $type = "")
     {
-        if ($this->isRegistered($identifier, $type)) {
+        if ($this->isRegistered($identifier)) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
 
-        $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
+        $this->adaptor->registerDocument($this->section, json_encode($value), $identifier, $type);
     }
 
     /**
@@ -85,6 +85,7 @@ class Elasticsearch extends Registry
      *
      * @param string $identifier
      * @param mixed $value
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
@@ -97,13 +98,14 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->updateDocument($identifier, $value, $this->section, $type);
+        $this->adaptor->updateDocument($identifier, json_encode($value), $this->section, $type);
     }
 
     /**
      * Removes an item off the register.
      *
      * @param string $identifier
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
@@ -149,6 +151,7 @@ class Elasticsearch extends Registry
      * Verifies a document is in the elasticsearch index.
      *
      * @param string $identifier
+     * @param string $type
      *
      * @return bool
      */
@@ -177,14 +180,16 @@ class Elasticsearch extends Registry
      * Finds the item corresponding to the provided identifier in the registry.
      *
      * @param string $identifier
-     * @param null $default
+     * @param string $default
+     * @param string $type
      *
      * @return array
      */
-    public function getContentById($identifier, $default = null)
+    public function getContentById($identifier, $default = "", $type = "")
     {
         $index = $this->registry[$this->section];
-        return $this->adaptor->getDocument($identifier, $index->getName());
+        $document = $this->adaptor->getDocument($identifier, $index->getName(), $type);
+        return json_decode($document, true);
     }
 
     /**

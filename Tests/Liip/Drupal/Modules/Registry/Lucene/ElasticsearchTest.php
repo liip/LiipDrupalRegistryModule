@@ -1,10 +1,8 @@
 <?php
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
-use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Index;
-use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
@@ -89,7 +87,7 @@ class ElasticsearchTest extends RegistryTestCase
         $type = $attribRegistry[self::$indexName]->getType('collab');
 
         $this->assertEquals(
-            array('automotive' => 'train'),
+            array('string'=> '{"automotive":"train"}'),
             $type->getDocument('toRegister')->getData()
         );
     }
@@ -106,7 +104,7 @@ class ElasticsearchTest extends RegistryTestCase
         $type = $attribRegistry[self::$indexName]->getType($typeName);
 
         $this->assertEquals(
-            array('foo' => 'bar'),
+            array('string'=> '{"foo":"bar"}'),
             $type->getDocument('toRegister2')->getData()
         );
     }
@@ -146,12 +144,9 @@ class ElasticsearchTest extends RegistryTestCase
         $registry = $this->registerDocument(self::$indexName, $identifier, array('devil' => 'old'), $typeName);
         $registry->replace($identifier, array('devil' => 'new'), $typeName);
 
-        $attribRegistry = $this->readAttribute($registry, 'registry');
-        $type = $attribRegistry[self::$indexName]->getType($typeName);
-
         $this->assertEquals(
             array('devil' => 'new'),
-            $type->getDocument($identifier)->getData()
+            $registry->getContentById($identifier, '', $typeName)
         );
     }
 
@@ -236,7 +231,7 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertEquals(
             array(
-                'toReadContent'  => array('tux' => 'linus'),
+                'toReadContent'  => array('string'=> '{"tux":"linus"}'),
             ),
             $registry->getContent());
     }
@@ -256,24 +251,23 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testGetContentByIds()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linus'));
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linux'));
         $registry->register('toReadContentByIds1', array('Foo' => 'bar'));
         $registry->register('toReadContentByIds2', array('John' => 'Doe'));
 
         $this->assertEquals(
             array(
-                'toReadContentByIds' => array('tux' => 'linus'),
-                'toReadContentByIds1' => array('Foo' => 'bar')
+                'toReadContentByIds' => array('tux' => 'linux'),
+                'toReadContentByIds2' => array('John' => 'Doe')
             ),
             $registry->getContentByIds(
                 array(
                     'toReadContentByIds',
-                    'toReadContentByIds1'
+                    'toReadContentByIds2'
                 )
             )
         );
     }
-
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
