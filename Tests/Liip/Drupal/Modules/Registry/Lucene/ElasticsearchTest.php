@@ -1,10 +1,8 @@
 <?php
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
-use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Index;
-use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
@@ -89,7 +87,7 @@ class ElasticsearchTest extends RegistryTestCase
         $type = $attribRegistry[self::$indexName]->getType('collab');
 
         $this->assertEquals(
-            array('automotive' => 'train'),
+            array('string'=> '{"automotive":"train"}'),
             $type->getDocument('toRegister')->getData()
         );
     }
@@ -106,7 +104,7 @@ class ElasticsearchTest extends RegistryTestCase
         $type = $attribRegistry[self::$indexName]->getType($typeName);
 
         $this->assertEquals(
-            array('foo' => 'bar'),
+            array('string'=> '{"foo":"bar"}'),
             $type->getDocument('toRegister2')->getData()
         );
     }
@@ -146,12 +144,9 @@ class ElasticsearchTest extends RegistryTestCase
         $registry = $this->registerDocument(self::$indexName, $identifier, array('devil' => 'old'), $typeName);
         $registry->replace($identifier, array('devil' => 'new'), $typeName);
 
-        $attribRegistry = $this->readAttribute($registry, 'registry');
-        $type = $attribRegistry[self::$indexName]->getType($typeName);
-
         $this->assertEquals(
             array('devil' => 'new'),
-            $type->getDocument($identifier)->getData()
+            $registry->getContentById($identifier, '', $typeName)
         );
     }
 
@@ -236,19 +231,37 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertEquals(
             array(
-                'toReadContent'  => array('tux' => 'linus'),
+                'toReadContent'  => array('string'=> '{"tux":"linus"}'),
             ),
             $registry->getContent());
     }
 
     /**
+     * @dataProvider getContentByIdDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentById
      */
-    public function testGetContentById()
+    public function testGetContentById($expected, $value)
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', array('tux' => 'linus'));
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', $value);
 
-        $this->assertEquals(array('tux' => 'linus'), $registry->getContentById('toReadContentByIdFrom'));
+        $this->assertEquals($expected, $registry->getContentById('toReadContentByIdFrom'));
+    }
+    public static function getContentByIdDataprovider()
+    {
+        return array(
+            'store assoc array' => array(
+                array('tux' => 'linus'),
+                array('tux' => 'linus')
+            ),
+            'store numbered array' => array(
+                array('tux', 'linus'),
+                array('tux', 'linus')
+            ),
+            'store object' => array(
+                (object) array('tux' => 'linus'),
+                (object) array('tux' => 'linus')
+            ),
+        );
     }
 
     /**
@@ -256,24 +269,23 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testGetContentByIds()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linus'));
+        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linux'));
         $registry->register('toReadContentByIds1', array('Foo' => 'bar'));
         $registry->register('toReadContentByIds2', array('John' => 'Doe'));
 
         $this->assertEquals(
             array(
-                'toReadContentByIds' => array('tux' => 'linus'),
-                'toReadContentByIds1' => array('Foo' => 'bar')
+                'toReadContentByIds' => array('tux' => 'linux'),
+                'toReadContentByIds2' => array('John' => 'Doe')
             ),
             $registry->getContentByIds(
                 array(
                     'toReadContentByIds',
-                    'toReadContentByIds1'
+                    'toReadContentByIds2'
                 )
             )
         );
     }
-
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
@@ -289,5 +301,59 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertSame($esAdaptorFake, $registry->getESAdaptor());
 
+    }
+
+    /**
+     * @dataProvider determineContentTypeMappingDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::determineContentTypeMapping
+     */
+    public function testDetermineContentTypeMapping($expected, $id, $value)
+    {
+        $dcc = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->setConstructorArgs(array('mySection', $dcc, $assertion))
+            ->setMethods(array('determineContentTypeMapping'))
+            ->getProxy();
+
+        $registry->determineContentTypeMapping($id, $value);
+
+        $this->assertAttributeEquals($expected, 'typeMap', $registry);
+    }
+    public static function determineContentTypeMappingDataprovider()
+    {
+        return array(
+            'type is string' => array(array('tux' => 'string'), 'tux', 'foo'),
+            'type is array' => array(array('tux' => 'array'), 'tux', array('foo')),
+            'type is object' => array(array('tux' => 'object'), 'tux', new \stdClass),
+            'type is instance of a class' => array(array('tux' => 'object'), 'tux', new \ArrayObject()),
+        );
+    }
+
+    /**
+     * @dataProvider contentAsArrayDataprovider
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::contentAsArray
+     */
+    public function testContentAsArray($expected, $id)
+    {
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setMethods(array('contentAsArray'))
+            ->setProperties(array('typeMap'))
+            ->getProxy();
+        $registry->typeMap = array(
+            'tux array' => 'array',
+            'gnu object' => 'object'
+        );
+
+        $this->assertSame($expected, $registry->contentAsArray($id));
+    }
+    public static function contentAsArrayDataprovider()
+    {
+        return array(
+            'id represents array' => array(true, 'tux array'),
+            'id represents object' => array(false, 'gnu object'),
+        );
     }
 }
