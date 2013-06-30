@@ -19,7 +19,7 @@ class D7Config extends Registry
     public function __construct($section, Common $dcc, Assertion $assertion)
     {
         parent::__construct($section, $dcc, $assertion);
-        $this->registry = $dcc->variable_get($section, array());
+        $this->registry[$section] = $dcc->variable_get($section, array());
     }
 
     /**
@@ -31,7 +31,7 @@ class D7Config extends Registry
     public function register($identifier, $value)
     {
         parent::register($identifier, $value);
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry);
+        $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
     }
 
     /**
@@ -69,7 +69,7 @@ class D7Config extends Registry
      */
     public function destroy()
     {
-        $this->registry = array();
+        $this->registry[$this->section] = array();
         $this->drupalCommonConnector->variable_del($this->section, $this->registry);
 
         $content = $this->drupalCommonConnector->variable_get($this->section, array());
@@ -88,13 +88,13 @@ class D7Config extends Registry
      */
     public function init()
     {
-        if(! empty($this->registry)) {
+        if(! empty($this->registry[$this->section])) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
             );
         }
 
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry);
+        $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
     }
 }

@@ -53,7 +53,7 @@ abstract class Registry implements RegistryInterface
         $this->verifySectionName($section);
         $this->section = $section;
 
-        $this->registry = array();
+        $this->registry = array($section => array());
     }
 
     /**
@@ -82,11 +82,11 @@ abstract class Registry implements RegistryInterface
      */
     public function getContent()
     {
-        return $this->registry;
+        return $this->registry[$this->section];
     }
 
     /**
-     * Determines if the given identifier refers to a world.
+     * Determines if the given identifier refers to a registry item.
      *
      * @param string $identifier
      * @return bool
@@ -97,7 +97,7 @@ abstract class Registry implements RegistryInterface
     {
         $this->verifySectionName($identifier);
 
-        return array_key_exists($identifier, $this->registry);
+        return array_key_exists($identifier, $this->registry[$this->section]);
     }
 
     /**
@@ -111,12 +111,16 @@ abstract class Registry implements RegistryInterface
     public function getContentById($identifier, $default = null)
     {
         $this->assertion->keyExists(
-            $this->registry,
+            $this->registry[$this->section],
             $identifier,
-            'Requested item ('. $identifier .') is not registered in the current registry.'
+            sprintf(
+                'Requested item (%s) is not registered in the current section (%s) of the registry.',
+                $identifier,
+                $this->section
+            )
         );
 
-        return $this->registry[$identifier];
+        return $this->registry[$this->section][$identifier];
     }
 
     /**
@@ -155,7 +159,7 @@ abstract class Registry implements RegistryInterface
             );
         }
 
-        $this->registry[$identifier] = $value;
+        $this->registry[$this->section][$identifier] = $value;
     }
 
     /**
@@ -174,7 +178,7 @@ abstract class Registry implements RegistryInterface
             );
         }
 
-        $this->registry[$identifier] = $value;
+        $this->registry[$this->section][$identifier] = $value;
     }
 
     /**
@@ -190,7 +194,7 @@ abstract class Registry implements RegistryInterface
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
-        unset($this->registry[$identifier]);
+        unset($this->registry[$this->section][$identifier]);
     }
 
 }

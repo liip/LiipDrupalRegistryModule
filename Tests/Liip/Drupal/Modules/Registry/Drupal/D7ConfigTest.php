@@ -33,7 +33,7 @@ class D7ConfigTest extends RegistryTestCase
     public function testRegister()
     {
         $expected = array(
-            'WorldOfOs' => array(),
+            'mySection' => array('WorldOfOs' => array(),)
         );
 
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
@@ -59,7 +59,7 @@ class D7ConfigTest extends RegistryTestCase
     public function testReplace()
     {
         $expected = array(
-            'WorldOfOs' => array('TUX'),
+            'mySection' => array('WorldOfOs' => array('TUX'))
         );
 
         $registry = $this->getD7ConfigProxy(
@@ -67,7 +67,7 @@ class D7ConfigTest extends RegistryTestCase
             array('string', 'notEmpty')
         );
 
-        $registry->registry = array('WorldOfOs' => array());
+        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
         $registry->replace('WorldOfOs', array('TUX'));
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
@@ -95,10 +95,11 @@ class D7ConfigTest extends RegistryTestCase
     {
         $registry = $this->getD7ConfigProxy(array('variable_set'), array('string', 'notEmpty'));
 
-        $registry->registry = array('WorldOfOs' => array());
+        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
         $registry->unregister('WorldOfOs');
 
-        $this->assertAttributeEmpty('registry', $registry);
+        $content = $this->readAttribute($registry, 'registry');
+        $this->assertEmpty($content['mySection']);
     }
 
     /**
@@ -119,7 +120,7 @@ class D7ConfigTest extends RegistryTestCase
     {
         $registry = $this->getD7ConfigProxy(array('t'));
 
-        $registry->registry = array('WorldOfOs' => array());
+        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
         $registry->register('WorldOfOs', array());
     }
 
@@ -220,7 +221,7 @@ class D7ConfigTest extends RegistryTestCase
         $registry = new D7Config('Tux', $dcc, $this->getAssertionObjectMock());
         $registry->init();
 
-        $this->assertAttributeEquals(array(), 'registry', $registry);
+        $this->assertAttributeEquals(array('Tux' => array()), 'registry', $registry);
     }
 
     /**
@@ -230,7 +231,7 @@ class D7ConfigTest extends RegistryTestCase
     public function testInitExpectingException()
     {
         $registry = $this->getD7ConfigProxy(array('t'));
-        $registry->registry = array('tux');
+        $registry->registry = array('mySection' => array('tux'));
         $registry->init();
     }
 }
