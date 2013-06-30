@@ -27,6 +27,16 @@ class Elasticsearch extends Registry
      */
     protected $adaptor;
 
+    /**
+     * @var array Mapping what type a registered content has
+     */
+    protected $typeMap = array();
+
+    /**
+     * @var string Representation of the type map in the persistence layer.
+     */
+    protected $typeMapName = '';
+
 
     /**
      * @param string $section
@@ -38,13 +48,15 @@ class Elasticsearch extends Registry
         $this->validateElasticaDependency();
         $this->adaptor = $this->getESAdaptor();
 
-        parent::__construct($section, $dcc, $assertion);
-
         // elastica will complain if the index name is not lowercase.
         $this->section = strtolower($this->section);
 
+        parent::__construct($section, $dcc, $assertion);
+
         $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
 
+        $this->typeMapName = 'elasticsearch_typmap_' . $section;
+        $this->typeMap = $dcc->variable_get($this->typeMapName, array());
     }
 
     /**
@@ -65,6 +77,7 @@ class Elasticsearch extends Registry
      *
      * @param string $identifier
      * @param mixed $value
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
@@ -77,7 +90,9 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
+        $this->determineContentTypeMapping($identifier, $value);
+
+        $this->adaptor->registerDocument($this->section, json_encode($value), $identifier, $type);
     }
 
     /**
@@ -85,6 +100,7 @@ class Elasticsearch extends Registry
      *
      * @param string $identifier
      * @param mixed $value
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
@@ -97,13 +113,16 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->updateDocument($identifier, $value, $this->section, $type);
+        $this->determineContentTypeMapping($identifier, $value);
+
+        $this->adaptor->updateDocument($identifier, json_encode($value), $this->section, $type);
     }
 
     /**
      * Removes an item off the register.
      *
      * @param string $identifier
+     * @param string $type
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
@@ -117,6 +136,10 @@ class Elasticsearch extends Registry
         }
 
         $this->adaptor->removeDocuments(array($identifier), $this->section, $type);
+
+        // housekeeping for the type map
+        unset($this->typeMap[$identifier]);
+        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
     }
 
     /**
@@ -149,6 +172,7 @@ class Elasticsearch extends Registry
      * Verifies a document is in the elasticsearch index.
      *
      * @param string $identifier
+     * @param string $type
      *
      * @return bool
      */
@@ -177,14 +201,17 @@ class Elasticsearch extends Registry
      * Finds the item corresponding to the provided identifier in the registry.
      *
      * @param string $identifier
-     * @param null $default
+     * @param string $default
+     * @param string $type
      *
      * @return array
      */
-    public function getContentById($identifier, $default = null)
+    public function getContentById($identifier, $default = "", $type = "")
     {
         $index = $this->registry[$this->section];
-        return $this->adaptor->getDocument($identifier, $index->getName());
+        $document = $this->adaptor->getDocument($identifier, $index->getName(), $type);
+
+        return json_decode($document, $this->contentAsArray($identifier));
     }
 
     /**
@@ -210,5 +237,36 @@ class Elasticsearch extends Registry
     public function setESAdaptor(AdaptorInterface $adaptor)
     {
         $this->adaptor = $adaptor;
+    }
+
+    /**
+     * Determines the type of the given value.
+     *
+     * @param $id
+     * @param $value
+     */
+    protected function determineContentTypeMapping($id, $value)
+    {
+        $type = 'array';
+
+        // determine type of $value
+        if (!is_array($value)) {
+            $type = gettype($value);
+        }
+
+        $this->typeMap[$id] = $type;
+        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
+    }
+
+    /**
+     * Determines if the type of the stored content identified by id is an array or not.
+     *
+     * @param string $id
+     *
+     * @return bool
+     */
+    protected function contentAsArray($id)
+    {
+        return ($this->typeMap[$id] === 'array')? true : false;
     }
 }

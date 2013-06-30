@@ -96,7 +96,7 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getRegistryObject($indexName)
     {
-        $common = $this->getDrupalCommonConnectorMock(array('t'));
+        $common = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
         $common
             ->expects($this->any())
             ->method('t')
@@ -116,11 +116,12 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
      *
      * @param string $indexName
      * @param string $documentId
-     * @param array $data
+     * @param mixed $data
+     * @param string $typeName
      *
      * @return Elasticsearch
      */
-    protected function registerDocument($indexName, $documentId, array $data, $typeName = '')
+    protected function registerDocument($indexName, $documentId, $data, $typeName = '')
     {
         $registry = $this->getRegistryObject($indexName);
         $registry->register($documentId, $data, $typeName);

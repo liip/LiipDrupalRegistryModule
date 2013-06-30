@@ -9,7 +9,7 @@ class RegistryTest extends RegistryTestCase
     /**
      * @param \Assert\Assertion $assertions
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Liip\Drupal\Modules\Registry\Registry
      */
     protected function getRegistryObject(Assertion $assertions)
     {
@@ -61,7 +61,9 @@ class RegistryTest extends RegistryTestCase
     public function testRegister()
     {
         $expected = array(
-            'WorldOfOs' => array(),
+            'mySection' => array (
+                'WorldOfOs' => array('TinMan', 'lion'),
+            )
         );
 
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
@@ -70,13 +72,9 @@ class RegistryTest extends RegistryTestCase
             ->method('string')
             ->with($this->isType('string'));
 
-        $registry = new D7Config(
-            'mySection',
-            $this->getDrupalCommonConnectorFixture(array('variable_set')),
-            $assertions
-        );
+        $registry = $this->getRegistryObject($assertions);
 
-        $registry->register('WorldOfOs', array());
+        $registry->register('WorldOfOs', array('TinMan', 'lion'));
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
     }
@@ -87,7 +85,9 @@ class RegistryTest extends RegistryTestCase
     public function testReplace()
     {
         $expected = array(
-            'WorldOfOs' => array('TUX'),
+            'mySection' => array(
+                'WorldOfOs' => array('TUX'),
+            )
         );
 
         $assertions = $this->getAssertionObjectMock();
@@ -105,11 +105,7 @@ class RegistryTest extends RegistryTestCase
      */
     public function testReplaceExpectingRegistryException()
     {
-        $registry = new D7Config(
-            'mySection',
-            $this->getDrupalCommonConnectorFixture(array('t')),
-            $this->getAssertionObjectMock(array('string', 'notEmpty'))
-        );
+        $registry = $this->getRegistryObject($this->getAssertionObjectMock());
 
         $registry->replace('WorldOfOs', array());
     }
@@ -125,7 +121,9 @@ class RegistryTest extends RegistryTestCase
         $registry->register('WorldOfOs', array());
         $registry->unregister('WorldOfOs');
 
-        $this->assertAttributeEmpty('registry', $registry);
+        $content = $this->readAttribute($registry, 'registry');
+
+        $this->assertEmpty($content['mySection']);
     }
 
     /**
@@ -160,7 +158,7 @@ class RegistryTest extends RegistryTestCase
     {
         $assertions = $this->getAssertionObjectMock();
 
-        $registry = new D7Config('mySection', $this->getDrupalCommonConnectorFixture(), $assertions);
+        $registry = $this->getRegistryObject($assertions);
 
         $this->assertFalse($registry->isRegistered('Tux'));
     }
