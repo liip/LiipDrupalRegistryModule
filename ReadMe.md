@@ -5,7 +5,12 @@ We started with the standard Drupal 7 way to cache data (see: [http://api.drupal
 by implementing a facade to the `variable_get()`, `variable_set()`, `variable_del()` functions. This implementation is
 provided as the default and example implementation for the registry.
 
-##Current Travis Status
+
+## Restrictions
+It is not possible to store other objects than value objects without private members. Keep in mind that objects of any instance will be converted to instances of stdClass.
+
+
+## Current Travis Status
 
 [![Build Status](https://travis-ci.org/liip/LiipDrupalRegistryModule.png?branch=master)](https://travis-ci.org/liip/LiipDrupalRegistryModule)
 
@@ -16,7 +21,7 @@ and use it.
 In case you don't use a [PSR-0](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md) compatible autoloader, you only have to add the `bootstrap.php` into your bootstrap or
 autoloader.
 
-###Composer
+### Composer
 Add the following lines to your `composer.json` file and update your project's composer installation.
 
 ```json
