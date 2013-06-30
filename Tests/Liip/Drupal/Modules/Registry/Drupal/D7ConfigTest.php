@@ -205,6 +205,27 @@ class D7ConfigTest extends RegistryTestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::destroy
+     */
+    public function testDestroyExpectingExeption()
+    {
+        $dcc =$this->getDrupalCommonConnectorMock(array('variable_del', 'variable_get'));
+        $dcc
+            ->expects($this->exactly(2))
+            ->method('variable_get')
+            ->will($this->returnValue(array('foo')));
+
+        $registry = new D7Config(
+            'mySection',
+            $dcc,
+            new Assertion()
+        );
+
+        $registry->destroy();
+    }
+
+    /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init
      */
     public function testInit()
