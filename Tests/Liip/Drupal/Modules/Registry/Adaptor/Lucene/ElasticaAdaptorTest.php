@@ -292,7 +292,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             'string value' => array(array('string' => '"blob"'), 'blob'),
             'array value' => array(array('array' => '{"tux":"gnu"}'), array('tux' => 'gnu')),
             'object value' => array(array('object' => '{"tux":"gnu"}'), (object) array('tux' => 'gnu')),
-            'class instance value' => array(array('object' => '{}'), new \ArrayObject()),
+            'class instance value' => array(array('object' => '{"tux":"gnu"}'), new \ArrayObject(array('tux' => 'gnu'))),
         );
     }
 
