@@ -27,7 +27,9 @@ class Elasticsearch extends Registry
      */
     protected $adaptor;
 
-    /** @var array Mapping what type a registered content has */
+    /**
+     * @var array Mapping what type a registered content has
+     */
     protected $typeMap = array();
 
 
@@ -73,7 +75,7 @@ class Elasticsearch extends Registry
      */
     public function register($identifier, $value, $type = "")
     {
-        if ($this->isRegistered($identifier)) {
+        if ($this->isRegistered($identifier, $type)) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
@@ -197,6 +199,7 @@ class Elasticsearch extends Registry
     {
         $index = $this->registry[$this->section];
         $document = $this->adaptor->getDocument($identifier, $index->getName(), $type);
+
         return json_decode($document, $this->contentAsArray($identifier));
     }
 
@@ -226,7 +229,7 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Determines the type of the
+     * Determines the type of the given value.
      *
      * @param $id
      * @param $value
@@ -240,17 +243,18 @@ class Elasticsearch extends Registry
             $type = gettype($value);
         }
 
-
         $this->typeMap[$id] = $type;
     }
 
     /**
-     * @param $id
+     * Determines if the type of the stored content identified by id is an array or not.
+     *
+     * @param string $id
      *
      * @return bool
      */
     protected function contentAsArray($id)
     {
-        return ($this->typeMap[$id] === 'array')? true :false;
+        return ($this->typeMap[$id] === 'array')? true : false;
     }
 }
