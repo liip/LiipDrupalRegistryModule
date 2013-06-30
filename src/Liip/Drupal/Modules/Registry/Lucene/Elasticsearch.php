@@ -27,16 +27,6 @@ class Elasticsearch extends Registry
      */
     protected $adaptor;
 
-    /**
-     * @var array Mapping what type a registered content has
-     */
-    protected $typeMap = array();
-
-    /**
-     * @var string Representation of the type map in the persistence layer.
-     */
-    protected $typeMapName = '';
-
 
     /**
      * @param string $section
@@ -54,9 +44,6 @@ class Elasticsearch extends Registry
         parent::__construct($section, $dcc, $assertion);
 
         $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
-
-        $this->typeMapName = 'elasticsearch_typmap_' . $section;
-        $this->typeMap = $dcc->variable_get($this->typeMapName, array());
     }
 
     /**
@@ -90,9 +77,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->determineContentTypeMapping($identifier, $value);
-
-        $this->adaptor->registerDocument($this->section, json_encode($value), $identifier, $type);
+        $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
     }
 
     /**
@@ -113,9 +98,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->determineContentTypeMapping($identifier, $value);
-
-        $this->adaptor->updateDocument($identifier, json_encode($value), $this->section, $type);
+        $this->adaptor->updateDocument($identifier, $value, $this->section, $type);
     }
 
     /**
@@ -136,10 +119,6 @@ class Elasticsearch extends Registry
         }
 
         $this->adaptor->removeDocuments(array($identifier), $this->section, $type);
-
-        // housekeeping for the type map
-        unset($this->typeMap[$identifier]);
-        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
     }
 
     /**
@@ -209,9 +188,8 @@ class Elasticsearch extends Registry
     public function getContentById($identifier, $default = "", $type = "")
     {
         $index = $this->registry[$this->section];
-        $document = $this->adaptor->getDocument($identifier, $index->getName(), $type);
 
-        return json_decode($document, $this->contentAsArray($identifier));
+        return $this->adaptor->getDocument($identifier, $index->getName(), $type);
     }
 
     /**
@@ -232,41 +210,11 @@ class Elasticsearch extends Registry
     /**
      * Provides the ability to influence the used adaptor to whatever elasticsearch library.
      *
+     * @param \Liip\Drupal\Modules\Registry\Adaptor\Lucene\AdaptorInterface $adaptor
      * @param AdaptorInterface $adaptor
      */
     public function setESAdaptor(AdaptorInterface $adaptor)
     {
         $this->adaptor = $adaptor;
-    }
-
-    /**
-     * Determines the type of the given value.
-     *
-     * @param $id
-     * @param $value
-     */
-    protected function determineContentTypeMapping($id, $value)
-    {
-        $type = 'array';
-
-        // determine type of $value
-        if (!is_array($value)) {
-            $type = gettype($value);
-        }
-
-        $this->typeMap[$id] = $type;
-        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
-    }
-
-    /**
-     * Determines if the type of the stored content identified by id is an array or not.
-     *
-     * @param string $id
-     *
-     * @return bool
-     */
-    protected function contentAsArray($id)
-    {
-        return ($this->typeMap[$id] === 'array')? true : false;
     }
 }

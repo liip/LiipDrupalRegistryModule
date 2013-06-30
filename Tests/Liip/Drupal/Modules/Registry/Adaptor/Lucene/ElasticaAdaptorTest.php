@@ -129,19 +129,13 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             self::$indexName
         );
 
-        $data = $updatedDocument->getData();
-
-        $this->assertEquals($expected, $data);
+        $this->assertEquals($expected, $updatedDocument->getData());
     }
     public static function updateDocumentDataprovider()
     {
         return array(
             'valid array data'   => array(
-                array(
-                    'food' => 'Crisps',
-                    'nearNonFood' => 'Sponch',
-                    'Mascott' => 'Tux'
-                ),
+                array('array' => '{"food":"Crisps","nearNonFood":"Sponch"}'),
                 'foodStock',
                 array('Mascott' => 'Tux'),
                 array(
@@ -151,7 +145,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             ),
             'valid string data'  => array(
                 array(
-                    'string' => 'OUYA'
+                    'string' => '"OUYA"'
                 ),
                 'gamingConsoles',
                 'XBOX',
@@ -243,8 +237,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
 
         $this->assertEquals(
             array('tux' => 'devil'),
-            $adaptor->getDocument('toBeRetrieved',
-                self::$indexName)
+            $adaptor->getDocument('toBeRetrieved', self::$indexName)
         );
     }
 
@@ -279,41 +272,28 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      * @dataProvider normalizeValueDataprovider
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::normalizeValue
      */
-    public function testNormalizeValue($value)
+    public function testNormalizeValue($expected, $value)
     {
         $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
             ->setMethods(array('normalizeValue'))
             ->getProxy();
 
         $valueArray = $adaptor->normalizeValue($value);
-        $key = gettype($value);
 
         $this->assertInternalType('array', $valueArray);
-        $this->assertEquals(1, sizeof($valueArray));
+        $this->assertEquals($expected, $valueArray);
     }
     public static function normalizeValueDataprovider()
     {
         return array(
-            'number value' => array(1),
-            'float value'  => array(1.1),
-            'string value' => array('blob'),
+            'empty value' => array(array(), array()),
+            'number value' => array(array('integer' => '1'), 1),
+            'float value'  => array(array('double' => '1.1'), 1.1),
+            'string value' => array(array('string' => '"blob"'), 'blob'),
+            'array value' => array(array('array' => '{"tux":"gnu"}'), array('tux' => 'gnu')),
+            'object value' => array(array('object' => '{"tux":"gnu"}'), (object) array('tux' => 'gnu')),
+            'class instance value' => array(array('object' => '{"tux":"gnu"}'), new \ArrayObject(array('tux' => 'gnu'))),
         );
-    }
-
-    /**
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::normalizeValue
-     */
-    public function testNormalizeValueWithArray()
-    {
-        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
-            ->setMethods(array('normalizeValue'))
-            ->getProxy();
-
-        $array = array('value one', 'value two', 'value three');
-
-        $convertedArray = $adaptor->normalizeValue($array);
-
-        $this->assertSame($array, $convertedArray);
     }
 
     /**
@@ -333,28 +313,12 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     public static function denormalizeArrayDataprovider()
     {
         return array(
-            'normalized number array' => array(1, array('integer' => 1)),
-            'normalized float array'  => array(1.1, array('double'  => 1.1)),
-            'normalized string array' => array('blob', array('string'  => 'blob')),
-            'usual data' => array(array('tux' => 'mascott'), array('tux' => 'mascott')),
+            'normalized object array' => array(array((object) array('tux' => 'gnu')), array(array('object' => '{"tux":"gnu"}'))),
+            'normalized number array' => array(array(1), array(array('integer' => 1))),
+            'normalized float array'  => array(array(1.1), array(array('double'  => 1.1))),
+            'normalized string array' => array(array('blob'), array(array('string' => '"blob"'))),
+            'usual data' => array(array(array('tux' => 'mascott')), array(array('array' => '{"tux":"mascott"}'))),
         );
-    }
-
-    /**
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::denormalizeValue
-     */
-    public function testDenormalizeArrayWithNonArray()
-    {
-        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
-            ->setMethods(array('denormalizeValue'))
-            ->getProxy();
-
-        $notAnArray = 1;
-
-        $value = $adaptor->denormalizeValue($notAnArray);
-
-        $this->assertNotInternalType('array', $value);
-        $this->assertSame($notAnArray, $value);
     }
 
     /**

@@ -47,11 +47,8 @@ class ElasticaAdaptor implements AdaptorInterface
         );
 
         if (!$document instanceof Document) {
-            if (!is_array($document)) {
-                $document = $this->normalizeValue($document);
-            }
+            $document = $this->normalizeValue($document);
 
-            Assertion::isArray($document, 'The value of the document to be added to the index has to be of type array.');
             Assertion::notEmpty($document, 'The document data may not be empty.');
 
             $document = new Document($identifier, $document);
@@ -151,7 +148,8 @@ class ElasticaAdaptor implements AdaptorInterface
           empty($typeName) ? $this->typeName : $typeName
         );
 
-        return $this->denormalizeValue($type->getDocument($id)->getData());
+        $data = $this->denormalizeValue(array($id => $type->getDocument($id)->getData()));
+        return $data[$id];
     }
 
     /**
@@ -209,16 +207,12 @@ class ElasticaAdaptor implements AdaptorInterface
      * @return array          the normalized array
      */
     protected function normalizeValue($value) {
-        if (!is_array($value)) {
 
-            $key = gettype($value);
-            $array = array($key => $value);
-
-        } else {
+        if (empty($value)) {
             return $value;
         }
 
-        return $array;
+        return array(gettype($value) => json_encode($value));
     }
 
     /**
@@ -227,25 +221,25 @@ class ElasticaAdaptor implements AdaptorInterface
      * @param array $data    the expected normalized array
      * @return mixed          the normalized value
      */
-    protected function denormalizeValue($data) {
+    protected function denormalizeValue(array $data)
+    {
+        $processed = array();
 
-        if (is_array($data) && 1 == sizeof($data)) {
+        foreach ($data as $docId => $content) {
+            $cloned = $content;
+            $ofType = array_pop(array_keys($cloned));
+            $asArray = ('array' == $ofType)? true : false;
 
-            $clone = $data;
-
-            $ofType = gettype(array_pop($clone));
-
-            if (array_key_exists($ofType, $data)) {
-                $value = $data[$ofType];
+            if (array_key_exists($ofType, $content)) {
+                $value = $content[$ofType];
             } else {
-                $value = $data;
+                $value = $content;
             }
 
-        } else {
-            return $data;
+            $processed[$docId] = json_decode($value, $asArray);
         }
 
-        return $value;
+        return $processed;
     }
 
     /**
