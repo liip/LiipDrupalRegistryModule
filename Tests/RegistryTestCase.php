@@ -96,7 +96,7 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getRegistryObject($indexName)
     {
-        $common = $this->getDrupalCommonConnectorMock(array('t'));
+        $common = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
         $common
             ->expects($this->any())
             ->method('t')

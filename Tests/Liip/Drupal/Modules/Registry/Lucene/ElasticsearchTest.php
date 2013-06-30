@@ -309,8 +309,11 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testDetermineContentTypeMapping($expected, $id, $value)
     {
+        $dcc = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
+        $assertion = $this->getAssertionObjectMock();
+
         $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Lucene\Elasticsearch')
-            ->disableOriginalConstructor()
+            ->setConstructorArgs(array('mySection', $dcc, $assertion))
             ->setMethods(array('determineContentTypeMapping'))
             ->getProxy();
 

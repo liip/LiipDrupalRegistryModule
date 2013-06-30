@@ -32,6 +32,11 @@ class Elasticsearch extends Registry
      */
     protected $typeMap = array();
 
+    /**
+     * @var string Representation of the type map in the persistence layer.
+     */
+    protected $typeMapName = '';
+
 
     /**
      * @param string $section
@@ -49,6 +54,9 @@ class Elasticsearch extends Registry
         parent::__construct($section, $dcc, $assertion);
 
         $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
+
+        $this->typeMapName = 'elasticsearch_typmap_' . $section;
+        $this->typeMap = $dcc->variable_get($this->typeMapName, array());
     }
 
     /**
@@ -128,7 +136,10 @@ class Elasticsearch extends Registry
         }
 
         $this->adaptor->removeDocuments(array($identifier), $this->section, $type);
+
+        // housekeeping for the type map
         unset($this->typeMap[$identifier]);
+        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
     }
 
     /**
@@ -244,6 +255,7 @@ class Elasticsearch extends Registry
         }
 
         $this->typeMap[$id] = $type;
+        $this->drupalCommonConnector->variable_set($this->typeMapName, $this->typeMap);
     }
 
     /**
