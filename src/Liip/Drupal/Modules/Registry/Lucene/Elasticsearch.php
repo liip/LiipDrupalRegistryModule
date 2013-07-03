@@ -72,7 +72,10 @@ class Elasticsearch extends Registry
     {
         if ($this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -93,7 +96,10 @@ class Elasticsearch extends Registry
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -113,7 +119,10 @@ class Elasticsearch extends Registry
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::UNKNOWN_IDENTIFIER_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
@@ -141,7 +150,10 @@ class Elasticsearch extends Registry
         if (!class_exists('\Elastica\Index')) {
 
             throw new RegistryException(
-                RegistryException::MISSING_DEPENDENCY_TEXT,
+                $this->drupalCommonConnector->t(
+                    RegistryException::MISSING_DEPENDENCY_TEXT,
+                    array('@dep' => '\Elastica\Index')
+                ),
                 RegistryException::MISSING_DEPENDENCY_CODE
             );
         }
