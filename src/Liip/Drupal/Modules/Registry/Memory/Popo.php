@@ -36,7 +36,7 @@ class Popo extends Registry
      */
     public function init()
     {
-        if(! empty($this->registry[$this->section])) {
+        if (! empty($this->registry[$this->section])) {
             throw new RegistryException(
                 $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
@@ -102,7 +102,10 @@ class Popo extends Registry
     {
         if ($this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
+                    array('' => '')
+                ),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -121,7 +124,10 @@ class Popo extends Registry
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -138,7 +144,10 @@ class Popo extends Registry
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::UNKNOWN_IDENTIFIER_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }

@@ -134,7 +134,7 @@ abstract class Registry implements RegistryInterface
     {
         $items = array();
 
-        foreach($identifiers as $id) {
+        foreach ($identifiers as $id) {
 
             $items[$id] = $this->getContentById($id);
         }
@@ -154,7 +154,10 @@ abstract class Registry implements RegistryInterface
     {
         if ($this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -173,7 +176,10 @@ abstract class Registry implements RegistryInterface
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -190,7 +196,10 @@ abstract class Registry implements RegistryInterface
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::UNKNOWN_IDENTIFIER_TEXT),
+                $this->drupalCommonConnector->t(
+                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
+                    array('@id' => $identifier)
+                ),
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
