@@ -2,7 +2,9 @@
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Elastica\Client;
+use Elastica\Exception\ClientException;
 use Elastica\Index;
+use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
@@ -18,6 +20,16 @@ class ElasticsearchTest extends RegistryTestCase
         if (!class_exists('\Elastica\Index')) {
             $this->markTestSkipped(
                 'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
+            );
+        }
+
+        try {
+            $adaptor = new ElasticaAdaptor();
+            $adaptor->getIndex(self::$indexName);
+
+        } catch (ClientException $e) {
+            $this->markTestSkipped(
+                'The connection attemped to elasticsearch server failed. Error: '. $e->getMessage()
             );
         }
     }
