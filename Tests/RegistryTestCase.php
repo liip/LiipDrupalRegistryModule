@@ -90,28 +90,6 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param $indexName
-     *
-     * @return Elasticsearch
-     */
-    protected function getRegistryObject($indexName)
-    {
-        $common = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
-        $common
-            ->expects($this->any())
-            ->method('t')
-            ->will($this->returnArgument(0));
-
-        $registry = new Elasticsearch(
-            $indexName,
-            $common,
-            new Assertion()
-        );
-
-        return $registry;
-    }
-
-    /**
      * Provides a registry with a registered document.
      *
      * @param string $indexName

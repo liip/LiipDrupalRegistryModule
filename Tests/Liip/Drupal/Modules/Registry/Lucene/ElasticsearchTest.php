@@ -1,6 +1,7 @@
 <?php
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
+use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Exception\ClientException;
 use Elastica\Index;
@@ -56,6 +57,30 @@ class ElasticsearchTest extends RegistryTestCase
                 );
             }
         }
+    }
+
+    /**
+     * Provides an instance of the Elasticsearch object.
+     *
+     * @param $indexName
+     *
+     * @return Elasticsearch
+     */
+    protected function getRegistryObject($indexName)
+    {
+        $common = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
+        $common
+            ->expects($this->any())
+            ->method('t')
+            ->will($this->returnArgument(0));
+
+        $registry = new Elasticsearch(
+            $indexName,
+            $common,
+            new Assertion()
+        );
+
+        return $registry;
     }
 
     /**
