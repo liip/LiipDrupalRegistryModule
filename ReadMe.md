@@ -1,8 +1,7 @@
 # Liip Drupal Registry Module
 This module provides an API to store key/value pairs of information.
 The Idea came when we had to change the persistence layer of how custom data is stored to be available to the system later.
-We started with the standard Drupal 7 way to cache data (see: [http://api.drupal.org/api/drupal/includes!bootstrap.inc/function/variable_set/7])
-by implementing a facade to the `variable_get()`, `variable_set()`, `variable_del()` functions. This implementation is
+We started with the [standard Drupal 7 way](http://api.drupal.org/api/drupal/includes!bootstrap.inc/function/variable_set/7) to cache data by implementing a facade to the `variable_get()`, `variable_set()`, `variable_del()` functions. This implementation is
 provided as the default and example implementation for the registry.
 
 
