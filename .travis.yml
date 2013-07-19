@@ -8,3 +8,6 @@ php:
 
 before_script:
   - composer install --dev
+
+services:
+  - elasticsearch
