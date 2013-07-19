@@ -227,7 +227,8 @@ class ElasticaAdaptor implements AdaptorInterface
 
         foreach ($data as $docId => $content) {
             $cloned = $content;
-            $ofType = array_pop(array_keys($cloned));
+            $keys = array_keys($cloned);
+            $ofType = array_pop($keys);
             $asArray = ('array' == $ofType)? true : false;
 
             if (array_key_exists($ofType, $content)) {
