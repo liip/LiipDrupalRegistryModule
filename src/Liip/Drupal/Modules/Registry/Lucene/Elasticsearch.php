@@ -39,11 +39,11 @@ class Elasticsearch extends Registry
         $this->adaptor = $this->getESAdaptor();
 
         // elastica will complain if the index name is not lowercase.
-        $this->section = strtolower($this->section);
+        $section = strtolower($section);
 
         parent::__construct($section, $dcc, $assertion);
 
-        $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
+        $this->registry[$section] = $this->adaptor->getIndex($section);
     }
 
     /**
