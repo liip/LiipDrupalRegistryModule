@@ -60,7 +60,7 @@ class ElasticaAdaptor implements AdaptorInterface
         );
 
         if (!$document instanceof Document) {
-            $document = $this->normalizeValue($document);
+            $document = $this->decorator->normalizeValue($document);
 
             Assertion::notEmpty($document, 'The document data may not be empty.');
 
@@ -119,7 +119,7 @@ class ElasticaAdaptor implements AdaptorInterface
 
         // data array needs to have the key 'doc'
         $rawData = array(
-            'doc' => $this->normalizeValue($data)
+            'doc' => $this->decorator->normalizeValue($data)
         );
 
         $response = $client->updateDocument(
@@ -161,7 +161,7 @@ class ElasticaAdaptor implements AdaptorInterface
           empty($typeName) ? $this->typeName : $typeName
         );
 
-        $data = $this->denormalizeValue(array($id => $type->getDocument($id)->getData()));
+        $data = $this->decorator->denormalizeValue(array($id => $type->getDocument($id)->getData()));
         return $data[$id];
     }
 
@@ -188,7 +188,7 @@ class ElasticaAdaptor implements AdaptorInterface
         $resultSet = $search->search($query);
         $results = $resultSet->getResults();
 
-        return $this->denormalizeValue($this->extractData($results));
+        return $this->decorator->denormalizeValue($this->extractData($results));
     }
 
     /**

@@ -33,7 +33,7 @@ class NoOpDecorator implements DecoratorInterface
      */
     public function denormalizeValue(array $data)
     {
-        return array_values($data);
+        return $data;
     }
 
 }

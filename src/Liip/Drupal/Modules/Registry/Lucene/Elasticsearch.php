@@ -27,16 +27,22 @@ class Elasticsearch extends Registry
      * @var \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor
      */
     protected $adaptor;
+    /**
+     * @var DecoratorInterface
+     */
+    protected $decorator;
 
 
     /**
-     * @param string $section
-     * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
-     * @param \Assert\Assertion $assertion
+     * @param string             $section
+     * @param Common             $dcc
+     * @param Assertion          $assertion
+     * @param DecoratorInterface $decorator
      */
     public function __construct($section, Common $dcc, Assertion $assertion, DecoratorInterface $decorator)
     {
         $this->validateElasticaDependency();
+        $this->decorator = $decorator;
         $this->adaptor = $this->getESAdaptor();
 
         // elastica will complain if the index name is not lowercase.
@@ -214,7 +220,7 @@ class Elasticsearch extends Registry
     {
         if (empty($this->adaptor)) {
 
-            $this->adaptor = new ElasticaAdaptor();
+            $this->adaptor = new ElasticaAdaptor($this->decorator);
         }
 
         return $this->adaptor;
