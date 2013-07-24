@@ -4,6 +4,7 @@ namespace Liip\Drupal\Modules\Registry\Lucene;
 use Assert\Assertion;
 use Elastica\Exception\NotFoundException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface;
 use Liip\Drupal\Modules\Registry\Adaptor\Lucene\AdaptorInterface;
 use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
@@ -33,7 +34,7 @@ class Elasticsearch extends Registry
      * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
      */
-    public function __construct($section, Common $dcc, Assertion $assertion)
+    public function __construct($section, Common $dcc, Assertion $assertion, DecoratorInterface $decorator)
     {
         $this->validateElasticaDependency();
         $this->adaptor = $this->getESAdaptor();

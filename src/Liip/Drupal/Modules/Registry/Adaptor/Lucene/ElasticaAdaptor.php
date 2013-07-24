@@ -12,6 +12,7 @@ use Elastica\Query\MatchAll;
 use Elastica\Result;
 use Elastica\Search;
 use Liip\Drupal\Modules\Registry\Adaptor\AdaptorException;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface;
 
 class ElasticaAdaptor implements AdaptorInterface
 {
@@ -27,6 +28,18 @@ class ElasticaAdaptor implements AdaptorInterface
      * @var string Name of the standard type
      */
     protected $typeName = 'collab';
+    /**
+     * @var DecoratorInterface
+     */
+    protected $decorator;
+
+    /**
+     * @param DecoratorInterface $decorator
+     */
+    public function __construct(DecoratorInterface $decorator)
+    {
+        $this->decorator = $decorator;
+    }
 
     /**
      * Adds a document to an index.
@@ -198,49 +211,6 @@ class ElasticaAdaptor implements AdaptorInterface
         }
 
         return $converted;
-    }
-
-    /**
-     * Converts a non-array value to an array
-     *
-     * @param mixed $value    is the "non-array" value
-     * @return array          the normalized array
-     */
-    protected function normalizeValue($value) {
-
-        if (empty($value)) {
-            return $value;
-        }
-
-        return array(gettype($value) => json_encode($value));
-    }
-
-    /**
-     * Converts a normalized array to the original value
-     *
-     * @param array $data    the expected normalized array
-     * @return mixed          the normalized value
-     */
-    protected function denormalizeValue(array $data)
-    {
-        $processed = array();
-
-        foreach ($data as $docId => $content) {
-            $cloned = $content;
-            $keys = array_keys($cloned);
-            $ofType = array_pop($keys);
-            $asArray = ('array' == $ofType)? true : false;
-
-            if (array_key_exists($ofType, $content)) {
-                $value = $content[$ofType];
-            } else {
-                $value = $content;
-            }
-
-            $processed[$docId] = json_decode($value, $asArray);
-        }
-
-        return $processed;
     }
 
     /**
