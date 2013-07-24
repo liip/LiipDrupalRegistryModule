@@ -2,11 +2,22 @@
 namespace Liip\Drupal\Modules\Registry\Tests;
 
 use Assert\Assertion;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
+use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Lucene\Elasticsearch;
 use lapistano\ProxyObject\ProxyBuilder;
 
 abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * Provides a ElasticaAdaptor with the normalizer decorator
+     *
+     * @return ElasticaAdaptor
+     */
+    protected function getElasticaAdapter()
+    {
+        return new ElasticaAdaptor(new NormalizeDecorator());
+    }
 
     /**
      * Provides an instance of the ProxyBuilder

@@ -5,6 +5,7 @@ use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Exception\ClientException;
 use Elastica\Index;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
 use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
@@ -25,7 +26,7 @@ class ElasticsearchTest extends RegistryTestCase
         }
 
         try {
-            $adaptor = new ElasticaAdaptor();
+            $adaptor = $this->getElasticaAdapter();
             $adaptor->getIndex(self::$indexName);
 
         } catch (ClientException $e) {
@@ -77,7 +78,8 @@ class ElasticsearchTest extends RegistryTestCase
         $registry = new Elasticsearch(
             $indexName,
             $common,
-            new Assertion()
+            new Assertion(),
+            new NormalizeDecorator()
         );
 
         return $registry;
