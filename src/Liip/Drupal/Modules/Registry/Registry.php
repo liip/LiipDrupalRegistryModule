@@ -2,6 +2,7 @@
 namespace Liip\Drupal\Modules\Registry;
 
 use Assert\Assertion;
+use Assert\InvalidArgumentException;
 
 abstract class Registry implements RegistryInterface
 {
@@ -20,16 +21,6 @@ abstract class Registry implements RegistryInterface
      * @var string
      */
     protected $section = '';
-
-//    /**
-//     * Shall delete the current registry from the database.
-//     */
-//    abstract public function destroy();
-//
-//    /**
-//     * Shall register a new section in the registry
-//     */
-//    abstract public function init();
 
     /**
      * @param string $section
@@ -50,7 +41,7 @@ abstract class Registry implements RegistryInterface
      *
      * @param $section
      *
-     * @throws \Assert\InvalidArgumentException in case the provided string does not fit the requirements.
+     * @throws InvalidArgumentException
      */
     protected function verifySectionName($section)
     {
