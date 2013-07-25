@@ -17,7 +17,6 @@ class RegistryTest extends RegistryTestCase
             ->setMethods(array('destroy'))
             ->setConstructorArgs(array(
                 'mySection',
-                $this->getDrupalCommonConnectorMock(),
                 $assertions
             ))
             ->getMockForAbstractClass();
@@ -44,11 +43,10 @@ class RegistryTest extends RegistryTestCase
 
         $registry = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Drupal\\D7Config')
             ->setMethods(array('verifySectionName'))
-            ->setProperties(array('drupalCommonConnector', 'assertion'))
+            ->setProperties(array('assertion'))
             ->disableOriginalConstructor()
             ->getProxy();
 
-        $registry->drupalCommonConnector = $this->getDrupalCommonConnectorMock();
         $registry->assertion = $assertions;
 
         $registry->verifySectionName('mySection');

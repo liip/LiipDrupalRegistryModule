@@ -11,19 +11,16 @@ abstract class Registry implements RegistryInterface
      * @var \Assert\Assertion $assertion
      */
     protected $assertion;
-
     /**
      * Provides an API to use D7 functions in an OOP perspective.
      * @var \Liip\Drupal\Modules\DrupalConnector\Common
      */
     protected $drupalCommonConnector;
-
     /**
      * List of registered items..
      * @var array
      */
     protected $registry = array();
-
     /**
      * Name of the section in the registry to be altered.
      * @var string
@@ -42,12 +39,10 @@ abstract class Registry implements RegistryInterface
 
     /**
      * @param string $section
-     * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
      */
-    public function __construct($section, Common $dcc, Assertion $assertion)
+    public function __construct($section, Assertion $assertion)
     {
-        $this->drupalCommonConnector = $dcc;
         $this->assertion = $assertion;
 
         $this->verifySectionName($section);
@@ -77,7 +72,6 @@ abstract class Registry implements RegistryInterface
 
     /**
      * Provides the current set of registered items.
-     *
      * @return array
      */
     public function getContent()
@@ -86,18 +80,22 @@ abstract class Registry implements RegistryInterface
     }
 
     /**
-     * Determines if the given identifier refers to a registry item.
+     * Shall find the registry items corresponding to the provided list of identifiers.
      *
-     * @param string $identifier
-     * @return bool
+     * @param array $identifiers
      *
-     * @throws \Assert\InvalidArgumentException in case the $identifier is not a string.
+     * @return array
      */
-    public function isRegistered($identifier)
+    public function getContentByIds(array $identifiers)
     {
-        $this->verifySectionName($identifier);
+        $items = array();
 
-        return array_key_exists($identifier, $this->registry[$this->section]);
+        foreach ($identifiers as $id) {
+
+            $items[$id] = $this->getContentById($id);
+        }
+
+        return $items;
     }
 
     /**
@@ -124,29 +122,11 @@ abstract class Registry implements RegistryInterface
     }
 
     /**
-     * Shall find the registry items corresponding to the provided list of identifiers.
-     *
-     * @param array $identifiers
-     *
-     * @return array
-     */
-    public function getContentByIds(array $identifiers)
-    {
-        $items = array();
-
-        foreach ($identifiers as $id) {
-
-            $items[$id] = $this->getContentById($id);
-        }
-
-        return $items;
-    }
-
-    /**
      * Adds an item to the register.
      *
      * @param string $identifier
      * @param mixed $value
+     *
      * @throws RegistryException
      * @return void
      */
@@ -154,10 +134,7 @@ abstract class Registry implements RegistryInterface
     {
         if ($this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -166,20 +143,33 @@ abstract class Registry implements RegistryInterface
     }
 
     /**
+     * Determines if the given identifier refers to a registry item.
+     *
+     * @param string $identifier
+     *
+     * @return bool
+     * @throws \Assert\InvalidArgumentException in case the $identifier is not a string.
+     */
+    public function isRegistered($identifier)
+    {
+        $this->verifySectionName($identifier);
+
+        return array_key_exists($identifier, $this->registry[$this->section]);
+    }
+
+    /**
      * Replaces the content of the item identified by it's registration key by the new value.
      *
      * @param string $identifier
      * @param mixed $value
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     *
+     * @throws RegistryException
      */
     public function replace($identifier, $value)
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -191,15 +181,14 @@ abstract class Registry implements RegistryInterface
      * Removes an item off the register.
      *
      * @param string $identifier
+     *
+     * @throws RegistryException
      */
     public function unregister($identifier)
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::UNKNOWN_IDENTIFIER_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
