@@ -43,6 +43,7 @@ class Elasticsearch extends Registry
     {
         $this->validateElasticaDependency();
         $this->decorator = $decorator;
+        $this->assertion = $assertion;
         $this->adaptor = $this->getESAdaptor();
 
         // elastica will complain if the index name is not lowercase.
@@ -219,6 +220,12 @@ class Elasticsearch extends Registry
     public function getESAdaptor()
     {
         if (empty($this->adaptor)) {
+
+            $this->assertion->isInstanceOf(
+                $this->decorator,
+                '\Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface',
+                'Mandatory decorator object is not defined.'
+            );
 
             $this->adaptor = new ElasticaAdaptor($this->decorator);
         }

@@ -341,4 +341,21 @@ class ElasticsearchTest extends RegistryTestCase
         $this->assertSame($esAdaptorFake, $registry->getESAdaptor());
 
     }
+
+    /**
+     * @expectedException \Assert\InvalidArgumentException
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::__construct
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setESAdaptor
+     */
+    public function testGetEsAdaptorExceptionExpected()
+    {
+        $registry = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Lucene\\Elasticsearch')
+            ->disableOriginalConstructor()
+            ->setProperties(array('assertion'))
+            ->getProxy();
+        $registry->assertion = new Assertion();
+
+        $registry->getEsAdaptor();
+    }
 }
