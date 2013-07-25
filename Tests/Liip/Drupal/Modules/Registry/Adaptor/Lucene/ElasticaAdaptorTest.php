@@ -7,6 +7,8 @@ use Elastica\Exception\ClientException;
 use Elastica\Index;
 use Elastica\Result;
 use Liip\Drupal\Modules\Registry\Adaptor\AdaptorException;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NoOpDecorator;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticaAdaptorFunctionalTest extends RegistryTestCase
@@ -28,7 +30,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
         }
 
         try {
-            $adaptor = new ElasticaAdaptor();
+            $adaptor = $this->getElasticaAdapter();
             $adaptor->getIndex(self::$indexName);
 
         } catch (ClientException $e) {
@@ -67,7 +69,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testGetIndex()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $index = $adaptor->getIndex(self::$indexName);
 
         $attrib = $this->readAttribute($adaptor, 'indexes');
@@ -81,7 +83,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testGetIndexFromCache()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $index = $adaptor->getIndex(self::$indexName);
 
         $this->assertSame($index, $adaptor->getIndex(self::$indexName));
@@ -94,7 +96,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     {
         $this->setExpectedException('\Assert\InvalidArgumentException');
 
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->registerDocument(self::$indexName, array(), 'myDocument');
     }
 
@@ -104,7 +106,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testRegisterDocument($value)
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
 
         $this->assertInstanceOf(
             '\Elastica\Document',
@@ -127,7 +129,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testUpdateDocument($expected, $id, $registerData, $updateData)
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->registerDocument(
             self::$indexName,
             $registerData,
@@ -213,6 +215,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
             ->will($this->returnValue($client));
 
         $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
+            ->setConstructorArgs(array(new NormalizeDecorator()))
             ->setProperties(array('indexes'))
             ->getProxy();
 
@@ -239,7 +242,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testGetDocument()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->registerDocument(
             self::$indexName,
             array('tux' => 'devil'),
@@ -257,7 +260,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testGetDocuments()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->registerDocument(
             self::$indexName,
             array('tux' => 'devil'),
@@ -280,64 +283,11 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     }
 
     /**
-     * @dataProvider normalizeValueDataprovider
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::normalizeValue
-     */
-    public function testNormalizeValue($expected, $value)
-    {
-        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
-            ->setMethods(array('normalizeValue'))
-            ->getProxy();
-
-        $valueArray = $adaptor->normalizeValue($value);
-
-        $this->assertInternalType('array', $valueArray);
-        $this->assertEquals($expected, $valueArray);
-    }
-    public static function normalizeValueDataprovider()
-    {
-        return array(
-            'empty value' => array(array(), array()),
-            'number value' => array(array('integer' => '1'), 1),
-            'float value'  => array(array('double' => '1.1'), 1.1),
-            'string value' => array(array('string' => '"blob"'), 'blob'),
-            'array value' => array(array('array' => '{"tux":"gnu"}'), array('tux' => 'gnu')),
-            'object value' => array(array('object' => '{"tux":"gnu"}'), (object) array('tux' => 'gnu')),
-            'class instance value' => array(array('object' => '{"tux":"gnu"}'), new \ArrayObject(array('tux' => 'gnu'))),
-        );
-    }
-
-    /**
-     * @dataProvider denormalizeArrayDataprovider
-     * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::denormalizeValue
-     */
-    public function testDenormalizeArray($expected, $array)
-    {
-        $adaptor = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
-            ->setMethods(array('denormalizeValue'))
-            ->getProxy();
-
-        $value = $adaptor->denormalizeValue($array);
-
-        $this->assertEquals($expected, $value);
-    }
-    public static function denormalizeArrayDataprovider()
-    {
-        return array(
-            'normalized object array' => array(array((object) array('tux' => 'gnu')), array(array('object' => '{"tux":"gnu"}'))),
-            'normalized number array' => array(array(1), array(array('integer' => 1))),
-            'normalized float array'  => array(array(1.1), array(array('double'  => 1.1))),
-            'normalized string array' => array(array('blob'), array(array('string' => '"blob"'))),
-            'usual data' => array(array(array('tux' => 'mascott')), array(array('array' => '{"tux":"mascott"}'))),
-        );
-    }
-
-    /**
      * @covers \Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor::removeDocuments
      */
     public function testRemoveDocuments()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->registerDocument(
             self::$indexName,
             array('tux' => 'devil'),
@@ -365,7 +315,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testGetClient()
     {
-        $registry = new ElasticaAdaptor();
+        $registry = $this->getElasticaAdapter();
         $client = $registry->getClient();
 
         $this->assertAttributeInstanceOf('\\Elastica\\Client', 'client', $registry);
@@ -378,7 +328,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testNormalizeError($error)
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
 
         $this->assertInstanceOf(
             '\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\AdaptorException',
@@ -401,7 +351,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
      */
     public function testDeleteIndex()
     {
-        $adaptor = new ElasticaAdaptor();
+        $adaptor = $this->getElasticaAdapter();
         $adaptor->getIndex(self::$indexName);
 
         $adaptor->deleteIndex(self::$indexName);
@@ -419,6 +369,7 @@ class ElasticaAdaptorFunctionalTest extends RegistryTestCase
     public function testExtractData($expected, $value)
     {
         $registry = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\ElasticaAdaptor')
+            ->setConstructorArgs(array(new NormalizeDecorator()))
             ->setMethods(array('extractData'))
             ->getProxy();
 
