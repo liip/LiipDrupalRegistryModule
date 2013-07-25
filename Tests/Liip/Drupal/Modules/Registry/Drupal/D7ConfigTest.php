@@ -2,28 +2,87 @@
 namespace Liip\Drupal\Modules\Registry\Drupal;
 
 use Assert\Assertion;
-use Assert\InvalidArgumentException;
+use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NoOpDecorator;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class D7ConfigTest extends RegistryTestCase
 {
     /**
+     * Provides a stub for the Common class of the DrupalConnector Module.
+     *
+     * @param array $methods
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Liip\Drupal\Modules\DrupalConnector\Common
+     */
+    protected function getDrupalCommonConnectorMock(array $methods = array())
+    {
+        return $this->getMockBuilder('\\Liip\\Drupal\\Modules\\DrupalConnector\\Common')
+            ->setMethods($methods)
+            ->getMock();
+    }
+
+    /**
+     * Provides a fixture of the Common class of the Drupal Connector
+     *
+     * @param array $methods
+     * @return  \PHPUnit_Framework_MockObject_MockObject|\Liip\Drupal\Modules\DrupalConnector\Common
+     */
+    protected function getDrupalCommonConnectorFixture(array $methods = array())
+    {
+        $methods = array_merge($methods, array('variable_get'));
+
+        $drupalCommonConnector = $this->getDrupalCommonConnectorMock($methods);
+        $drupalCommonConnector
+            ->expects($this->once())
+            ->method('variable_get')
+            ->with(
+                $this->isType('string'),
+                $this->isType('array')
+            )
+            ->will(
+                $this->returnValue(array())
+            );
+
+        if (in_array('variable_set', $methods)) {
+            $drupalCommonConnector
+                ->expects($this->once())
+                ->method('variable_set')
+                ->with(
+                    $this->isType('string')
+                );
+        }
+
+        if (in_array('t', $methods)) {
+            $drupalCommonConnector
+                ->expects($this->once())
+                ->method('t')
+                ->with(
+                    $this->isType('string')
+                );
+        }
+
+        return $drupalCommonConnector;
+    }
+
+    /**
      * Provides a proxied representation of the Registry class.
      *
      * @param array $methods
      * @param array $assertionMethods
-     * @return \Liip\Drupal\Modules\Registry\Drupal\D7Config
+     *
+     * @return object D7Config
      */
     protected function getD7ConfigProxy(array $methods = array(), array $assertionMethods = array())
     {
-        return $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Drupal\\D7Config')
+        $registry = $this->getProxyBuilder('\\Liip\\Drupal\\Modules\\Registry\\Drupal\\D7Config')
             ->setProperties(array('registry'))
             ->setConstructorArgs(array(
                 'mySection',
-                $this->getDrupalCommonConnectorFixture($methods),
                 $this->getAssertionObjectMock($assertionMethods)
                 ))
             ->getProxy();
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorFixture($methods));
+
+        return $registry;
     }
 
     /**
@@ -44,9 +103,9 @@ class D7ConfigTest extends RegistryTestCase
 
         $registry = new D7Config(
             'mySection',
-            $this->getDrupalCommonConnectorFixture(array('variable_set')),
             $assertions
         );
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorFixture(array('variable_set')));
 
         $registry->register('WorldOfOs', array());
 
@@ -62,12 +121,20 @@ class D7ConfigTest extends RegistryTestCase
             'mySection' => array('WorldOfOs' => array('TUX'))
         );
 
-        $registry = $this->getD7ConfigProxy(
-            array('variable_set'),
-            array('string', 'notEmpty')
-        );
+        $dcc = $this->getDrupalCommonConnectorMock(array('variable_get', 'variable_set'));
+        $dcc
+            ->expects($this->once())
+            ->method('variable_get')
+            ->will(
+                $this->returnValue(array('WorldOfOs' => array()))
+            );
 
-        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
+        $registry = $registry = new D7Config(
+            'mySection',
+            new Assertion()
+        );
+        $registry->setDrupalCommonConnector($dcc);
+
         $registry->replace('WorldOfOs', array('TUX'));
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
@@ -81,9 +148,9 @@ class D7ConfigTest extends RegistryTestCase
     {
         $registry = new D7Config(
             'mySection',
-            $this->getDrupalCommonConnectorFixture(array('t')),
             $this->getAssertionObjectMock(array('string', 'notEmpty'))
         );
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorFixture());
 
         $registry->replace('WorldOfOs', array());
     }
@@ -93,9 +160,19 @@ class D7ConfigTest extends RegistryTestCase
      */
     public function testUnregister()
     {
-        $registry = $this->getD7ConfigProxy(array('variable_set'), array('string', 'notEmpty'));
+        $dcc = $this->getDrupalCommonConnectorMock(array('variable_get', 'variable_set'));
+        $dcc
+            ->expects($this->once())
+            ->method('variable_get')
+            ->will(
+                $this->returnValue(array('WorldOfOs' => array()))
+            );
 
-        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
+        $registry = $registry = new D7Config(
+            'mySection',
+            new Assertion()
+        );
+        $registry->setDrupalCommonConnector($dcc);
         $registry->unregister('WorldOfOs');
 
         $content = $this->readAttribute($registry, 'registry');
@@ -108,7 +185,7 @@ class D7ConfigTest extends RegistryTestCase
      */
     public function testUnregisterExpectingRegistryException()
     {
-        $registry = $this->getD7ConfigProxy(array('t'), array('string', 'notEmpty'));
+        $registry = $this->getD7ConfigProxy(array(), array('string', 'notEmpty'));
         $registry->unregister('WorldOfOs');
     }
 
@@ -118,9 +195,20 @@ class D7ConfigTest extends RegistryTestCase
      */
     public function testRegisterDuplicateWorldIdentifier()
     {
-        $registry = $this->getD7ConfigProxy(array('t'));
+        $dcc = $this->getDrupalCommonConnectorMock(array('t', 'variable_set', 'variable_get'));
+        $dcc
+            ->expects($this->once())
+            ->method('variable_get')
+            ->will(
+                $this->returnValue(array('WorldOfOs' => array()))
+            );
 
-        $registry->registry = array('mySection' => array('WorldOfOs' => array()));
+        $registry = $registry = new D7Config(
+            'mySection',
+            new Assertion()
+        );
+        $registry->setDrupalCommonConnector($dcc);
+
         $registry->register('WorldOfOs', array());
     }
 
@@ -135,7 +223,8 @@ class D7ConfigTest extends RegistryTestCase
             ->method('string')
             ->with($this->isType('string'));
 
-        $registry = new D7Config('mySection', $this->getDrupalCommonConnectorFixture(), $assertions);
+        $registry = new D7Config('mySection', $assertions);
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorMock());
 
         $this->assertFalse($registry->isRegistered('Tux'));
     }
@@ -151,11 +240,11 @@ class D7ConfigTest extends RegistryTestCase
             ->method('string')
             ->with($this->isType('string'));
 
-        $registry = new D7Config(
+        $registry = $registry = new D7Config(
             'mySection',
-            $this->getDrupalCommonConnectorFixture(array('variable_set')),
             $assertions
         );
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorFixture(array('variable_set')));
 
         $registry->register('worldOfOs', array());
 
@@ -175,9 +264,9 @@ class D7ConfigTest extends RegistryTestCase
 
         $registry = new D7Config(
             'mySection',
-            $this->getDrupalCommonConnectorFixture(array('variable_set')),
             $assertions
         );
+        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorFixture(array('variable_set')));
 
         $registry->register('worldOfOs', array());
 
@@ -191,15 +280,15 @@ class D7ConfigTest extends RegistryTestCase
     {
         $dcc =$this->getDrupalCommonConnectorMock(array('variable_del', 'variable_get'));
         $dcc
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('variable_get')
             ->will($this->returnValue(array()));
 
         $registry = new D7Config(
             'mySection',
-            $dcc,
             new Assertion()
         );
+        $registry->setDrupalCommonConnector($dcc);
 
         $registry->destroy();
     }
@@ -212,15 +301,15 @@ class D7ConfigTest extends RegistryTestCase
     {
         $dcc =$this->getDrupalCommonConnectorMock(array('variable_del', 'variable_get'));
         $dcc
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('variable_get')
             ->will($this->returnValue(array('foo')));
 
         $registry = new D7Config(
             'mySection',
-            $dcc,
             new Assertion()
         );
+        $registry->setDrupalCommonConnector($dcc);
 
         $registry->destroy();
     }
@@ -239,20 +328,44 @@ class D7ConfigTest extends RegistryTestCase
                 $this->isType('array')
             );
 
-        $registry = new D7Config('Tux', $dcc, $this->getAssertionObjectMock());
+        $registry = new D7Config('Tux', $this->getAssertionObjectMock());
+        $registry->setDrupalCommonConnector($dcc);
         $registry->init();
 
         $this->assertAttributeEquals(array('Tux' => array()), 'registry', $registry);
     }
 
     /**
-     * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init
      */
     public function testInitExpectingException()
     {
-        $registry = $this->getD7ConfigProxy(array('t'));
-        $registry->registry = array('mySection' => array('tux'));
+        $dcc = $this->getDrupalCommonConnectorMock(array('t', 'variable_set', 'variable_get'));
+        $dcc
+            ->expects($this->once())
+            ->method('variable_get')
+            ->will(
+                $this->returnValue(array('WorldOfOs' => array()))
+            );
+
+        $registry = $registry = new D7Config(
+            'mySection',
+            new Assertion()
+        );
+        $registry->setDrupalCommonConnector($dcc);
+
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->init();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::getDrupalCommonConnector
+     */
+    public function testGetDrupalCommonConnector()
+    {
+        $registry = new D7Config('mySection', new Assertion());
+
+        $this->assertInstanceOf('\Liip\Drupal\Modules\DrupalConnector\Common', $registry->getDrupalCommonConnector());
     }
 }

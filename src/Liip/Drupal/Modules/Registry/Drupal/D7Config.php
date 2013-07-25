@@ -2,24 +2,29 @@
 
 namespace Liip\Drupal\Modules\Registry\Drupal;
 
+
 use Assert\Assertion;
 use Assert\InvalidArgumentException;
 use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
 
-
 class D7Config extends Registry
 {
     /**
+     * @var \Liip\Drupal\Modules\DrupalConnector\Common
+     */
+    protected $drupalCommonConnector;
+
+    /**
      * @param string $section
-     * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
      */
-    public function __construct($section, Common $dcc, Assertion $assertion)
+    public function __construct($section, Assertion $assertion)
     {
-        parent::__construct($section, $dcc, $assertion);
-        $this->registry[$section] = $dcc->variable_get($section, array());
+        parent::__construct($section, $assertion);
+
+        $this->drupalCommonConnector = $this->getDrupalCommonConnector();
     }
 
     /**
@@ -30,6 +35,8 @@ class D7Config extends Registry
      */
     public function register($identifier, $value)
     {
+        $this->load();
+
         parent::register($identifier, $value);
         $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
     }
@@ -42,6 +49,8 @@ class D7Config extends Registry
      */
     public function replace($identifier, $value)
     {
+        $this->load();
+
         parent::replace($identifier, $value);
         $this->drupalCommonConnector->variable_set($this->section, $this->registry);
     }
@@ -55,16 +64,16 @@ class D7Config extends Registry
      */
     public function unregister($identifier)
     {
+        $this->load();
+
         parent::unregister($identifier);
         $this->drupalCommonConnector->variable_set($this->section, $this->registry);
     }
 
     /**
      * Deletes the current registry from the database.
-     *
      * !! Use with caution !!
      * There is no rollback.
-     *
      * @throws \Assert\InvalidArgumentException in case the operation failed.
      */
     public function destroy()
@@ -83,18 +92,52 @@ class D7Config extends Registry
 
     /**
      * Initates a registry.
-     *
-     * @throws \netmigrosintranet\modules\Registry\Classes\RegistryException in case the initiation of an active registry was requested.
+     * @throws RegistryException
      */
     public function init()
     {
-        if(! empty($this->registry[$this->section])) {
+        $this->load();
+
+        if (!empty($this->registry[$this->section])) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
+                RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(section: '. $this->section . ')',
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
             );
         }
 
         $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
+    }
+
+    /**
+     * Provides an instacne of the LiipDrupalConnectorCommon class.
+     *
+     * @return Common
+     */
+    public function getDrupalCommonConnector()
+    {
+        if (empty($this->drupalCommonConnector)) {
+
+            $this->drupalCommonConnector = new Common();
+        }
+
+        return $this->drupalCommonConnector;
+    }
+
+    /**
+     * Sets the given connector object as current.
+     *
+     * @param Common $dcc
+     */
+    public function setDrupalCommonConnector(Common $dcc)
+    {
+        $this->drupalCommonConnector = $dcc;
+    }
+
+    /**
+     * Loads the current content of the registry.
+     */
+    private function load()
+    {
+        $this->registry[$this->section] = $this->drupalCommonConnector->variable_get($this->section, array());
     }
 }
