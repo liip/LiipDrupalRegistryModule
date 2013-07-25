@@ -2,7 +2,6 @@
 namespace Liip\Drupal\Modules\Registry;
 
 use Assert\Assertion;
-use Liip\Drupal\Modules\DrupalConnector\Common;
 
 abstract class Registry implements RegistryInterface
 {
@@ -11,11 +10,6 @@ abstract class Registry implements RegistryInterface
      * @var \Assert\Assertion $assertion
      */
     protected $assertion;
-    /**
-     * Provides an API to use D7 functions in an OOP perspective.
-     * @var \Liip\Drupal\Modules\DrupalConnector\Common
-     */
-    protected $drupalCommonConnector;
     /**
      * List of registered items..
      * @var array
