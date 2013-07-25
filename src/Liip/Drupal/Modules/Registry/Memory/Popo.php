@@ -2,7 +2,6 @@
 namespace Liip\Drupal\Modules\Registry\Memory;
 
 use Assert\Assertion;
-use Liip\Drupal\Modules\DrupalConnector\Common;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
 
@@ -11,12 +10,11 @@ class Popo extends Registry
 {
     /**
      * @param string $section
-     * @param \Liip\Drupal\Modules\DrupalConnector\Common $dcc
      * @param \Assert\Assertion $assertion
      */
-    public function __construct($section, Common $dcc, Assertion $assertion)
+    public function __construct($section, Assertion $assertion)
     {
-        parent::__construct($section, $dcc, $assertion);
+        parent::__construct($section, $assertion);
 
         $this->registry[$this->section] = array();
     }
@@ -38,7 +36,7 @@ class Popo extends Registry
     {
         if (! empty($this->registry[$this->section])) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT),
+                RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(section: ' . $this->section . ')',
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
             );
         }
@@ -79,9 +77,8 @@ class Popo extends Registry
      * Determines if the given identifier refers to a world.
      *
      * @param string $identifier
-     * @return bool
      *
-     * @throws \Assert\InvalidArgumentException in case the $identifier is not a string.
+     * @return bool
      */
     public function isRegistered($identifier)
     {
@@ -95,17 +92,14 @@ class Popo extends Registry
      *
      * @param string $identifier
      * @param mixed $value
+     *
      * @throws RegistryException
-     * @return void
      */
     public function register($identifier, $value)
     {
         if ($this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
-                    array('' => '')
-                ),
+                RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -118,16 +112,14 @@ class Popo extends Registry
      *
      * @param string $identifier
      * @param mixed $value
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     *
+     * @throws RegistryException
      */
     public function replace($identifier, $value)
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -139,15 +131,14 @@ class Popo extends Registry
      * Removes an item off the register.
      *
      * @param string $identifier
+     *
+     * @throws RegistryException
      */
     public function unregister($identifier)
     {
         if (!$this->isRegistered($identifier)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::UNKNOWN_IDENTIFIER_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
