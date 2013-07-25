@@ -6,7 +6,6 @@ use Elastica\Client;
 use Elastica\Exception\ClientException;
 use Elastica\Index;
 use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
@@ -69,15 +68,8 @@ class ElasticsearchTest extends RegistryTestCase
      */
     protected function getRegistryObject($indexName)
     {
-        $common = $this->getDrupalCommonConnectorMock(array('t', 'variable_get', 'variable_set'));
-        $common
-            ->expects($this->any())
-            ->method('t')
-            ->will($this->returnArgument(0));
-
         $registry = new Elasticsearch(
             $indexName,
-            $common,
             new Assertion(),
             new NormalizeDecorator()
         );

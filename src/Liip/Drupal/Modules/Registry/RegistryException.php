@@ -13,11 +13,11 @@ class RegistryException extends \Exception
     const UNKNOWN_IDENTIFIER_TEXT = "Given identifier does not match a registered one.";
 
     const DUPLICATE_INITIATION_ATTEMPT_CODE = 4;
-    const DUPLICATE_INITIATION_ATTEMPT_TEXT = "Registry (@id) does already exist!";
+    const DUPLICATE_INITIATION_ATTEMPT_TEXT = "Registry does already exist!";
 
     const MISSING_DEPENDENCY_CODE = 5;
-    const MISSING_DEPENDENCY_TEXT = "Mandatory dependency (@dep) missing!";
+    const MISSING_DEPENDENCY_TEXT = "Mandatory dependency missing!";
 
     const UNSUPPORTED_DEPENDENCY_VERSION_CODE = 6;
-    const UNSUPPORTED_DEPENDENCY_VERSION_TEXT = "Unsupported version of a mandatory dependency (@dep).";
+    const UNSUPPORTED_DEPENDENCY_VERSION_TEXT = "Unsupported version of a mandatory dependency.";
 }
