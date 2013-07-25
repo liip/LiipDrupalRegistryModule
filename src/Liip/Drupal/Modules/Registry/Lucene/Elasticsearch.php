@@ -42,15 +42,14 @@ class Elasticsearch extends Registry
     public function __construct($section, Common $dcc, Assertion $assertion, DecoratorInterface $decorator)
     {
         $this->validateElasticaDependency();
-        $this->decorator = $decorator;
-        $this->assertion = $assertion;
-        $this->adaptor = $this->getESAdaptor();
 
         // elastica will complain if the index name is not lowercase.
         $section = strtolower($section);
 
         parent::__construct($section, $dcc, $assertion);
 
+        $this->decorator = $decorator;
+        $this->adaptor = $this->getESAdaptor();
         $this->registry[$section] = $this->adaptor->getIndex($section);
     }
 

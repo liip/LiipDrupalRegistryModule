@@ -343,10 +343,8 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
-     * @expectedException \Assert\InvalidArgumentException
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::__construct
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setESAdaptor
      */
     public function testGetEsAdaptorExceptionExpected()
     {
@@ -356,6 +354,7 @@ class ElasticsearchTest extends RegistryTestCase
             ->getProxy();
         $registry->assertion = new Assertion();
 
+        $this->setExpectedException('\\Assert\\InvalidArgumentException');
         $registry->getEsAdaptor();
     }
 }
