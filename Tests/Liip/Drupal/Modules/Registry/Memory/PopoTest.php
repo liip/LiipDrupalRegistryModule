@@ -6,16 +6,26 @@ use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 class PopoTest extends RegistryTestCase
 {
     /**
+     * Provides an instance of the sut.
+     * @return Popo
+     */
+    protected function getPopoObject()
+    {
+        $registry = new Popo(
+            'mySection',
+            $this->getAssertionObjectMock()
+        );
+
+        return $registry;
+    }
+
+    /**
      * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::destroy
      * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::__construct
      */
     public function testDestroy()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', 'devil');
         $registry->destroy();
@@ -28,14 +38,11 @@ class PopoTest extends RegistryTestCase
      */
     public function testInit()
     {
-        $registry = new Popo(
-            'Tux',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
+
         $registry->init();
 
-        $this->assertAttributeEquals(array('Tux' =>  array()), 'registry', $registry);
+        $this->assertAttributeEquals(array('mySection' => array()), 'registry', $registry);
     }
 
     /**
@@ -44,11 +51,8 @@ class PopoTest extends RegistryTestCase
      */
     public function testInitExpectingException()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
+
         $registry->register('Darwin', 'Evolution works!');
         $registry->init();
     }
@@ -58,11 +62,7 @@ class PopoTest extends RegistryTestCase
      */
     public function testGetContent()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', array('devil', 'Beastie'));
 
@@ -77,11 +77,7 @@ class PopoTest extends RegistryTestCase
      */
     public function testGetContentById()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', array('devil', 'Beastie'));
 
@@ -91,97 +87,79 @@ class PopoTest extends RegistryTestCase
         );
     }
 
-   /**
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::register
-    */
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::register
+     */
     public function testRegister()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', array('devil', 'Beastie'));
 
         $this->assertAttributeEquals(
             array('mySection' =>
-                array(
-                    'Tux' => array('devil', 'Beastie')
-                )
+                  array(
+                      'Tux' => array('devil', 'Beastie')
+                  )
             ),
             'registry',
             $registry
         );
     }
 
-   /**
-    * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::register
-    */
+    /**
+     * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::register
+     */
     public function testRegisterExpectingException()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', array('devil', 'Beastie'));
         $registry->register('Tux', array('Beastie'));
     }
 
-   /**
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::replace
-    */
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::replace
+     */
     public function testReplace()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->register('Tux', array('devil', 'Beastie'));
         $registry->replace('Tux', array('Beastie'));
 
         $this->assertAttributeEquals(
             array('mySection' =>
-                array(
-                    'Tux' => array('Beastie')
-                )
+                  array(
+                      'Tux' => array('Beastie')
+                  )
             ),
             'registry',
             $registry
         );
     }
 
-   /**
-    * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::replace
-    */
+    /**
+     * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::replace
+     */
     public function testReplaceExpectingException()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->replace('Tux', array('Beastie'));
     }
 
-   /**
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::unregister
-    */
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::unregister
+     */
     public function testUnregister()
     {
         $registry = new Popo(
             'mySection',
-            $this->getDrupalCommonConnectorMock(),
             $this->getAssertionObjectMock()
         );
-
         $registry->register('Tux', array('devil', 'Beastie'));
         $registry->unregister('Tux');
 
@@ -192,31 +170,22 @@ class PopoTest extends RegistryTestCase
         );
     }
 
-   /**
-    * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::unregister
-    */
+    /**
+     * @expectedException \Liip\Drupal\Modules\Registry\RegistryException
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::unregister
+     */
     public function testUnregisterExpectingExcetion()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->unregister('Tux');
     }
-
-   /**
-    * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::isRegistered
-    */
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Memory\Popo::isRegistered
+     */
     public function testIsRegistered()
     {
-        $registry = new Popo(
-            'mySection',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $this->assertFalse($registry->isRegistered('Tux'));
     }
@@ -226,19 +195,15 @@ class PopoTest extends RegistryTestCase
      */
     public function testLiveCycle()
     {
-        $registry = new Popo(
-            'Tux',
-            $this->getDrupalCommonConnectorMock(),
-            $this->getAssertionObjectMock()
-        );
+        $registry = $this->getPopoObject();
 
         $registry->init();
-        $this->assertAttributeEquals(array('Tux' => array()), 'registry', $registry);
+        $this->assertAttributeEquals(array('mySection' => array()), 'registry', $registry);
 
         $registry->register('Devil', array('os' => 'Linux'));
         $this->assertAttributeEquals(
             array(
-                'Tux' => array('Devil' => array('os' => 'Linux'))
+                'mySection' => array('Devil' => array('os' => 'Linux'))
             ),
             'registry',
             $registry
@@ -251,7 +216,7 @@ class PopoTest extends RegistryTestCase
         $this->assertEquals(array('os' => 'Linux'), $entry);
 
         $registry->unregister('Devil');
-        $this->assertAttributeEquals(array('Tux' => array()), 'registry', $registry);
+        $this->assertAttributeEquals(array('mySection' => array()), 'registry', $registry);
 
         $registry->destroy();
         $this->assertAttributeEquals(array(), 'registry', $registry);
