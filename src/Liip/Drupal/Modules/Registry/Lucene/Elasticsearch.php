@@ -4,11 +4,11 @@ namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Assert\Assertion;
 use Elastica\Exception\NotFoundException;
+use Liip\Drupal\Modules\Registry\Registry;
+use Liip\Drupal\Modules\Registry\RegistryException;
 use Liip\Registry\Adaptor\Decorator\DecoratorInterface;
 use Liip\Registry\Adaptor\Lucene\AdaptorInterface;
 use Liip\Registry\Adaptor\Lucene\ElasticaAdaptor;
-use Liip\Drupal\Modules\Registry\Registry;
-use Liip\Drupal\Modules\Registry\RegistryException;
 
 class Elasticsearch extends Registry
 {
@@ -107,7 +107,7 @@ class Elasticsearch extends Registry
     {
         if ($this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT . '(identifier: '. $identifier .')',
+                RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
@@ -149,7 +149,7 @@ class Elasticsearch extends Registry
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT . '(identifier: '. $identifier .')',
+                RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -169,7 +169,7 @@ class Elasticsearch extends Registry
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                RegistryException::UNKNOWN_IDENTIFIER_TEXT . '(identifier: '. $identifier .')',
+                RegistryException::UNKNOWN_IDENTIFIER_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
