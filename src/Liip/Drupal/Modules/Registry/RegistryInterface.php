@@ -10,13 +10,14 @@ interface RegistryInterface
      * @param string $identifier
      * @param mixed $value
      */
-    public function register($identifier, $value) ;
+    public function register($identifier, $value);
 
     /**
      * Replaces the content of the item identified by it's registration key by the new value.
      *
      * @param string $identifier
      * @param mixed $value
+     *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
     public function replace($identifier, $value);
@@ -32,13 +33,13 @@ interface RegistryInterface
      * Determines if the given identifier refers to an item in the register.
      *
      * @param string $identifier
+     *
      * @return bool
      */
     public function isRegistered($identifier);
 
     /**
      * Shall provide the current set of registered items.
-     *
      * @return array
      */
     public function getContent();

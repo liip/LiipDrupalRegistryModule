@@ -1,30 +1,27 @@
 <?php
 namespace Liip\Drupal\Modules\Registry\Lucene;
 
+
 use Assert\Assertion;
 use Elastica\Exception\NotFoundException;
-use Liip\Drupal\Modules\DrupalConnector\Common;
-use Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\AdaptorInterface;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
-
+use Liip\Registry\Adaptor\Decorator\DecoratorInterface;
+use Liip\Registry\Adaptor\Lucene\AdaptorInterface;
+use Liip\Registry\Adaptor\Lucene\ElasticaAdaptor;
 
 class Elasticsearch extends Registry
 {
     /**
-     * @var \Elastica\Client Instance of the elasticsearch library.
+     * @var \Elastica\Client
      */
     protected $elasticaClient;
-
     /**
      * @var \Elastica\Index[]
      */
     protected $registry;
-
     /**
-     * @var \Liip\Drupal\Modules\Registry\Adaptor\ElasticaAdaptor
+     * @var ElasticaAdaptor
      */
     protected $adaptor;
     /**
@@ -32,21 +29,19 @@ class Elasticsearch extends Registry
      */
     protected $decorator;
 
-
     /**
-     * @param string             $section
-     * @param Common             $dcc
-     * @param Assertion          $assertion
+     * @param string $section
+     * @param Assertion $assertion
      * @param DecoratorInterface $decorator
      */
-    public function __construct($section, Common $dcc, Assertion $assertion, DecoratorInterface $decorator)
+    public function __construct($section, Assertion $assertion, DecoratorInterface $decorator)
     {
         $this->validateElasticaDependency();
 
         // elastica will complain if the index name is not lowercase.
         $section = strtolower($section);
 
-        parent::__construct($section, $dcc, $assertion);
+        parent::__construct($section, $assertion);
 
         $this->decorator = $decorator;
         $this->adaptor = $this->getESAdaptor();
@@ -54,9 +49,42 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Initates a registry.
-     *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException in case the initiation of an active registry was requested.
+     * Verifies the existence of the
+     * @throws RegistryException
+     */
+    protected function validateElasticaDependency()
+    {
+        if (!class_exists('\Elastica\Index')) {
+
+            throw new RegistryException(
+                RegistryException::MISSING_DEPENDENCY_TEXT . '(dependency: \Elastica\Index)',
+                RegistryException::MISSING_DEPENDENCY_CODE
+            );
+        }
+    }
+
+    /**
+     * Provides an instance ot the adaptor e.g. of the Elastica library.
+     * @return AdaptorInterface
+     */
+    public function getESAdaptor()
+    {
+        if (empty($this->adaptor)) {
+
+            $this->assertion->isInstanceOf(
+                $this->decorator,
+                '\Liip\Registry\Adaptor\Decorator\DecoratorInterface',
+                'Mandatory decorator object is not defined.'
+            );
+
+            $this->adaptor = new ElasticaAdaptor($this->decorator);
+        }
+
+        return $this->adaptor;
+    }
+
+    /**
+     * Initiates a registry.
      */
     public function init()
     {
@@ -73,21 +101,39 @@ class Elasticsearch extends Registry
      * @param mixed $value
      * @param string $type
      *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     * @throws RegistryException
      */
     public function register($identifier, $value, $type = "")
     {
         if ($this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
             );
         }
 
         $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
+    }
+
+    /**
+     * Verifies a document is in the elasticsearch index.
+     *
+     * @param string $identifier
+     * @param string $type
+     *
+     * @return bool
+     */
+    public function isRegistered($identifier, $type = "")
+    {
+        try {
+
+            $this->adaptor->getDocument($identifier, $this->section, $type);
+        } catch (NotFoundException $e) {
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -97,16 +143,13 @@ class Elasticsearch extends Registry
      * @param mixed $value
      * @param string $type
      *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     * @throws RegistryException
      */
     public function replace($identifier, $value, $type = "")
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::MODIFICATION_ATTEMPT_FAILED_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::MODIFICATION_ATTEMPT_FAILED_CODE
             );
         }
@@ -120,16 +163,13 @@ class Elasticsearch extends Registry
      * @param string $identifier
      * @param string $type
      *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     * @throws RegistryException
      */
     public function unregister($identifier, $type = "")
     {
         if (!$this->isRegistered($identifier, $type)) {
             throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::UNKNOWN_IDENTIFIER_TEXT,
-                    array('@id' => $identifier)
-                ),
+                RegistryException::UNKNOWN_IDENTIFIER_TEXT . '(identifier: ' . $identifier . ')',
                 RegistryException::UNKNOWN_IDENTIFIER_CODE
             );
         }
@@ -148,46 +188,7 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Verifies the existence of the
-     *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
-     */
-    protected function validateElasticaDependency()
-    {
-        if (!class_exists('\Elastica\Index')) {
-
-            throw new RegistryException(
-                $this->drupalCommonConnector->t(
-                    RegistryException::MISSING_DEPENDENCY_TEXT,
-                    array('@dep' => '\Elastica\Index')
-                ),
-                RegistryException::MISSING_DEPENDENCY_CODE
-            );
-        }
-    }
-
-    /**
-     * Verifies a document is in the elasticsearch index.
-     *
-     * @param string $identifier
-     * @param string $type
-     *
-     * @return bool
-     */
-    public function isRegistered($identifier, $type = "")
-    {
-        try {
-            $this->adaptor->getDocument($identifier, $this->section, $type);
-        } catch (NotFoundException $e) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Provides the current set of registered items.
-     *
      * @return array
      */
     public function getContent()
@@ -212,30 +213,8 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * Provides an instance ot the adaptor e.g. of the Elastica library.
-     *
-     * @return AdaptorInterface
-     */
-    public function getESAdaptor()
-    {
-        if (empty($this->adaptor)) {
-
-            $this->assertion->isInstanceOf(
-                $this->decorator,
-                '\Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface',
-                'Mandatory decorator object is not defined.'
-            );
-
-            $this->adaptor = new ElasticaAdaptor($this->decorator);
-        }
-
-        return $this->adaptor;
-    }
-
-    /**
      * Provides the ability to influence the used adaptor to whatever elasticsearch library.
      *
-     * @param \Liip\Drupal\Modules\Registry\Adaptor\Lucene\AdaptorInterface $adaptor
      * @param AdaptorInterface $adaptor
      */
     public function setESAdaptor(AdaptorInterface $adaptor)
