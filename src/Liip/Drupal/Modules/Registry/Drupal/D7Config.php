@@ -28,6 +28,30 @@ class D7Config extends Registry
     }
 
     /**
+     * Provides an instacne of the LiipDrupalConnectorCommon class.
+     * @return Common
+     */
+    public function getDrupalCommonConnector()
+    {
+        if (empty($this->drupalCommonConnector)) {
+
+            $this->drupalCommonConnector = new Common();
+        }
+
+        return $this->drupalCommonConnector;
+    }
+
+    /**
+     * Sets the given connector object as current.
+     *
+     * @param Common $dcc
+     */
+    public function setDrupalCommonConnector(Common $dcc)
+    {
+        $this->drupalCommonConnector = $dcc;
+    }
+
+    /**
      * Adds an item to the registry.
      *
      * @param string $identifier
@@ -39,6 +63,14 @@ class D7Config extends Registry
 
         parent::register($identifier, $value);
         $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
+    }
+
+    /**
+     * Loads the current content of the registry.
+     */
+    private function load()
+    {
+        $this->registry[$this->section] = $this->drupalCommonConnector->variable_get($this->section, array());
     }
 
     /**
@@ -100,44 +132,11 @@ class D7Config extends Registry
 
         if (!empty($this->registry[$this->section])) {
             throw new RegistryException(
-                RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(section: '. $this->section . ')',
+                RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT . '(section: ' . $this->section . ')',
                 RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
             );
         }
 
         $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
-    }
-
-    /**
-     * Provides an instacne of the LiipDrupalConnectorCommon class.
-     *
-     * @return Common
-     */
-    public function getDrupalCommonConnector()
-    {
-        if (empty($this->drupalCommonConnector)) {
-
-            $this->drupalCommonConnector = new Common();
-        }
-
-        return $this->drupalCommonConnector;
-    }
-
-    /**
-     * Sets the given connector object as current.
-     *
-     * @param Common $dcc
-     */
-    public function setDrupalCommonConnector(Common $dcc)
-    {
-        $this->drupalCommonConnector = $dcc;
-    }
-
-    /**
-     * Loads the current content of the registry.
-     */
-    private function load()
-    {
-        $this->registry[$this->section] = $this->drupalCommonConnector->variable_get($this->section, array());
     }
 }
