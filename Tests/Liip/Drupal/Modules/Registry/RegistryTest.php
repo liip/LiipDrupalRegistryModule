@@ -7,22 +7,6 @@ use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 class RegistryTest extends RegistryTestCase
 {
     /**
-     * @param \Assert\Assertion $assertions
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject|\Liip\Drupal\Modules\Registry\Registry
-     */
-    protected function getRegistryObject(Assertion $assertions)
-    {
-        return $this->getMockBuilder('\\Liip\\Drupal\\Modules\\Registry\\Registry')
-            ->setMethods(array('destroy'))
-            ->setConstructorArgs(array(
-                'mySection',
-                $assertions
-            ))
-            ->getMockForAbstractClass();
-    }
-
-    /**
      * @covers \Liip\Drupal\Modules\Registry\Registry::verifySectionName
      * @covers \Liip\Drupal\Modules\Registry\Registry::__construct
      */
@@ -59,7 +43,7 @@ class RegistryTest extends RegistryTestCase
     public function testRegister()
     {
         $expected = array(
-            'mySection' => array (
+            'mySection' => array(
                 'WorldOfOs' => array('TinMan', 'lion'),
             )
         );
@@ -75,6 +59,22 @@ class RegistryTest extends RegistryTestCase
         $registry->register('WorldOfOs', array('TinMan', 'lion'));
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
+    }
+
+    /**
+     * @param \Assert\Assertion $assertions
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Liip\Drupal\Modules\Registry\Registry
+     */
+    protected function getRegistryObject(Assertion $assertions)
+    {
+        return $this->getMockBuilder('\\Liip\\Drupal\\Modules\\Registry\\Registry')
+            ->setMethods(array('destroy'))
+            ->setConstructorArgs(array(
+                'mySection',
+                $assertions
+            ))
+            ->getMockForAbstractClass();
     }
 
     /**
