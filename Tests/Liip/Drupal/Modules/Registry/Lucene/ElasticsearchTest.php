@@ -5,8 +5,8 @@ use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Exception\ClientException;
 use Elastica\Index;
-use Liip\Registry\Adaptor\Decorator\NormalizeDecorator;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
+use Liip\Registry\Adaptor\Decorator\NormalizeDecorator;
 
 class ElasticsearchTest extends RegistryTestCase
 {
@@ -15,24 +15,22 @@ class ElasticsearchTest extends RegistryTestCase
      */
     protected static $indexName = 'testdocuments';
 
-
-    protected function setUp()
+    public static function getContentByIdDataprovider()
     {
-        if (!class_exists('\Elastica\Index')) {
-            $this->markTestSkipped(
-                'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
-            );
-        }
-
-        try {
-            $adaptor = $this->getElasticaAdapter();
-            $adaptor->getIndex(self::$indexName);
-
-        } catch (ClientException $e) {
-            $this->markTestSkipped(
-                'The connection attemped to elasticsearch server failed. Error: '. $e->getMessage()
-            );
-        }
+        return array(
+            'store assoc array'    => array(
+                array('tux' => 'linus'),
+                array('tux' => 'linus')
+            ),
+            'store numbered array' => array(
+                array('tux', 'linus'),
+                array('tux', 'linus')
+            ),
+            'store object'         => array(
+                (object)array('tux' => 'linus'),
+                (object)array('tux' => 'linus')
+            ),
+        );
     }
 
     /**
@@ -40,7 +38,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function tearDown()
     {
-        $client =  new Client();
+        $client = new Client();
         $index = new Index($client, self::$indexName);
 
         if ($index->exists()) {
@@ -57,24 +55,6 @@ class ElasticsearchTest extends RegistryTestCase
                 );
             }
         }
-    }
-
-    /**
-     * Provides an instance of the Elasticsearch object.
-     *
-     * @param $indexName
-     *
-     * @return Elasticsearch
-     */
-    protected function getRegistryObject($indexName)
-    {
-        $registry = new Elasticsearch(
-            $indexName,
-            new Assertion(),
-            new NormalizeDecorator()
-        );
-
-        return $registry;
     }
 
     /**
@@ -108,17 +88,35 @@ class ElasticsearchTest extends RegistryTestCase
     }
 
     /**
+     * Provides an instance of the Elasticsearch object.
+     *
+     * @param $indexName
+     *
+     * @return Elasticsearch
+     */
+    protected function getRegistryObject($indexName)
+    {
+        $registry = new Elasticsearch(
+            $indexName,
+            new Assertion(),
+            new NormalizeDecorator()
+        );
+
+        return $registry;
+    }
+
+    /**
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::register
      */
     public function testRegister()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
+        $registry = $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
 
         $attribRegistry = $this->readAttribute($registry, 'registry');
         $type = $attribRegistry[self::$indexName]->getType('collab');
 
         $this->assertEquals(
-            array('array'=> '{"automotive":"train"}'),
+            array('array' => '{"automotive":"train"}'),
             $type->getDocument('toRegister')->getData()
         );
     }
@@ -129,13 +127,13 @@ class ElasticsearchTest extends RegistryTestCase
     public function testRegisterWithType()
     {
         $typeName = 'customTypeName';
-        $registry =  $this->registerDocument(self::$indexName, 'toRegister2', array('foo' => 'bar'), $typeName);
+        $registry = $this->registerDocument(self::$indexName, 'toRegister2', array('foo' => 'bar'), $typeName);
 
         $attribRegistry = $this->readAttribute($registry, 'registry');
         $type = $attribRegistry[self::$indexName]->getType($typeName);
 
         $this->assertEquals(
-            array('array'=> '{"foo":"bar"}'),
+            array('array' => '{"foo":"bar"}'),
             $type->getDocument('toRegister2')->getData()
         );
     }
@@ -146,7 +144,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testRegisterExpectingException()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
+        $registry = $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
         $registry->register('toRegister', array('automotive' => 'train'));
     }
 
@@ -186,7 +184,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testReplaceExpectingRegistgryException()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'JohnDoe', array('devil' => 'Debian'));
+        $registry = $this->registerDocument(self::$indexName, 'JohnDoe', array('devil' => 'Debian'));
 
         $this->setExpectedException('\\Liip\\Drupal\\Modules\\Registry\\RegistryException');
 
@@ -198,7 +196,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testUnregister()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toUnregister', array('devil' => 'Debian'));
+        $registry = $this->registerDocument(self::$indexName, 'toUnregister', array('devil' => 'Debian'));
         $registry->unregister('toUnregister');
 
         $this->setExpectedException('\\Elastica\\Exception\\NotFoundException');
@@ -211,7 +209,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testUnregisterExpectingException()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toUnregister', array('devil' => 'Debian'));
+        $registry = $this->registerDocument(self::$indexName, 'toUnregister', array('devil' => 'Debian'));
         $registry->unregister('notExistingDocument');
 
     }
@@ -237,7 +235,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testIsRegistered()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'isRegistered', array('devil' => 'Debian'));
+        $registry = $this->registerDocument(self::$indexName, 'isRegistered', array('devil' => 'Debian'));
 
         $this->assertTrue($registry->isRegistered('isRegistered'));
     }
@@ -247,7 +245,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testIsNotRegistered()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toGoodToBeTrue', array('tux' => 'linus'));
+        $registry = $this->registerDocument(self::$indexName, 'toGoodToBeTrue', array('tux' => 'linus'));
 
         $this->assertTrue($registry->isRegistered('toGoodToBeTrue'));
         $this->assertFalse($registry->isRegistered('isNotRegistered'));
@@ -258,41 +256,24 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testGetContent()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContent', array('tux' => 'linus'));
+        $registry = $this->registerDocument(self::$indexName, 'toReadContent', array('tux' => 'linus'));
 
         $this->assertEquals(
             array(
-                'toReadContent'  => array("tux" => "linus"),
+                'toReadContent' => array("tux" => "linus"),
             ),
             $registry->getContent());
     }
 
     /**
      * @dataProvider getContentByIdDataprovider
-     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentById
+     * @covers       \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContentById
      */
     public function testGetContentById($expected, $value)
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', $value);
+        $registry = $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', $value);
 
         $this->assertEquals($expected, $registry->getContentById('toReadContentByIdFrom'));
-    }
-    public static function getContentByIdDataprovider()
-    {
-        return array(
-            'store assoc array' => array(
-                array('tux' => 'linus'),
-                array('tux' => 'linus')
-            ),
-            'store numbered array' => array(
-                array('tux', 'linus'),
-                array('tux', 'linus')
-            ),
-            'store object' => array(
-                (object) array('tux' => 'linus'),
-                (object) array('tux' => 'linus')
-            ),
-        );
     }
 
     /**
@@ -300,13 +281,13 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testGetContentByIds()
     {
-        $registry =  $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linux'));
+        $registry = $this->registerDocument(self::$indexName, 'toReadContentByIds', array('tux' => 'linux'));
         $registry->register('toReadContentByIds1', array('Foo' => 'bar'));
         $registry->register('toReadContentByIds2', array('John' => 'Doe'));
 
         $this->assertEquals(
             array(
-                'toReadContentByIds' => array('tux' => 'linux'),
+                'toReadContentByIds'  => array('tux' => 'linux'),
                 'toReadContentByIds2' => array('John' => 'Doe')
             ),
             $registry->getContentByIds(
@@ -348,5 +329,24 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->setExpectedException('\\Assert\\InvalidArgumentException');
         $registry->getEsAdaptor();
+    }
+
+    protected function setUp()
+    {
+        if (!class_exists('\Elastica\Index')) {
+            $this->markTestSkipped(
+                'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
+            );
+        }
+
+        try {
+            $adaptor = $this->getElasticaAdapter();
+            $adaptor->getIndex(self::$indexName);
+
+        } catch (ClientException $e) {
+            $this->markTestSkipped(
+                'The connection attemped to elasticsearch server failed. Error: ' . $e->getMessage()
+            );
+        }
     }
 }
