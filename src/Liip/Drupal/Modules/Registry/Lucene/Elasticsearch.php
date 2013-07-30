@@ -4,9 +4,9 @@ namespace Liip\Drupal\Modules\Registry\Lucene;
 
 use Assert\Assertion;
 use Elastica\Exception\NotFoundException;
-use Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\AdaptorInterface;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
+use Liip\Registry\Adaptor\Decorator\DecoratorInterface;
+use Liip\Registry\Adaptor\Lucene\AdaptorInterface;
+use Liip\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
 
@@ -73,7 +73,7 @@ class Elasticsearch extends Registry
 
             $this->assertion->isInstanceOf(
                 $this->decorator,
-                '\Liip\Drupal\Modules\Registry\Adaptor\Decorator\DecoratorInterface',
+                '\Liip\Registry\Adaptor\Decorator\DecoratorInterface',
                 'Mandatory decorator object is not defined.'
             );
 

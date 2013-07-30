@@ -31,6 +31,7 @@
     "require": {
         "php": ">=5.3.8,<5.4",
         "liip/drupalconnectormodule": "dev-master",
+        "liip/registryadaptor": "dev-master",
         "beberlei/assert": "dev-master",
         "ruflin/elastica": "0.20.5.0.RC1"
     },
@@ -46,7 +47,8 @@
     "extra": {
         "installer-paths": {
             "vendor/liip/{$name}": [
-                "liip/drupalconnectormodule"
+                "liip/drupalconnectormodule",
+                "liip/registryadaptor"
             ]
         }
     }

@@ -2,8 +2,8 @@
 namespace Liip\Drupal\Modules\Registry\Tests;
 
 use Assert\Assertion;
-use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
-use Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor;
+use Liip\Registry\Adaptor\Decorator\NormalizeDecorator;
+use Liip\Registry\Adaptor\Lucene\ElasticaAdaptor;
 use Liip\Drupal\Modules\Registry\Lucene\Elasticsearch;
 use lapistano\ProxyObject\ProxyBuilder;
 

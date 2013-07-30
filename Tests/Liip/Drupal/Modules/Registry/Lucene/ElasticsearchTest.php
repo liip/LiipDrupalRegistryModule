@@ -5,7 +5,7 @@ use Assert\Assertion;
 use Elastica\Client;
 use Elastica\Exception\ClientException;
 use Elastica\Index;
-use Liip\Drupal\Modules\Registry\Adaptor\Decorator\NormalizeDecorator;
+use Liip\Registry\Adaptor\Decorator\NormalizeDecorator;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 class ElasticsearchTest extends RegistryTestCase
@@ -102,7 +102,7 @@ class ElasticsearchTest extends RegistryTestCase
 
         $this->assertAttributeEquals(self::$indexName, 'section', $registry);
         $this->assertInstanceOf(
-            '\Liip\Drupal\Modules\Registry\Adaptor\Lucene\ElasticaAdaptor',
+            '\Liip\Registry\Adaptor\Lucene\ElasticaAdaptor',
             $this->readAttribute($registry, 'adaptor')
         );
     }
@@ -324,7 +324,7 @@ class ElasticsearchTest extends RegistryTestCase
      */
     public function testGetEsAdaptor()
     {
-        $esAdaptorFake = $this->getMockBuilder('\\Liip\\Drupal\\Modules\\Registry\\Adaptor\\Lucene\\AdaptorInterface')
+        $esAdaptorFake = $this->getMockBuilder('\\Liip\\Registry\\Adaptor\\Lucene\\AdaptorInterface')
             ->getMockForAbstractClass();
 
         $registry = $this->getRegistryObject(self::$indexName);
