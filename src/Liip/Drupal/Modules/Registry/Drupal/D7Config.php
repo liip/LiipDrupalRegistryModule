@@ -23,13 +23,34 @@ class D7Config extends Registry
     public function __construct($section, Assertion $assertion)
     {
         parent::__construct($section, $assertion);
+    }
 
-        $this->drupalCommonConnector = $this->getDrupalCommonConnector();
+    /**
+     * Adds an item to the registry.
+     *
+     * @param string $identifier
+     * @param mixed $value
+     */
+    public function register($identifier, $value)
+    {
+        $this->load();
+
+        parent::register($identifier, $value);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry[$this->section]);
+    }
+
+    /**
+     * Loads the current content of the registry.
+     */
+    private function load()
+    {
+        $this->registry[$this->section] = $this->getDrupalCommonConnector()->variable_get($this->section, array());
     }
 
     /**
      * Provides an instacne of the LiipDrupalConnectorCommon class.
-     * @return Common
+     *
+     * @return \Liip\Drupal\Modules\DrupalConnector\Common
      */
     public function getDrupalCommonConnector()
     {
@@ -52,68 +73,48 @@ class D7Config extends Registry
     }
 
     /**
-     * Adds an item to the registry.
-     *
-     * @param string $identifier
-     * @param mixed $value
-     */
-    public function register($identifier, $value)
-    {
-        $this->load();
-
-        parent::register($identifier, $value);
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
-    }
-
-    /**
-     * Loads the current content of the registry.
-     */
-    private function load()
-    {
-        $this->registry[$this->section] = $this->drupalCommonConnector->variable_get($this->section, array());
-    }
-
-    /**
      * Replaces the content of the item identified by it's registration key by the new value.
      *
      * @param string $identifier
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function replace($identifier, $value)
     {
         $this->load();
 
         parent::replace($identifier, $value);
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry);
     }
 
     /**
      * Removes an item from the regisrty.
      *
      * @param string $identifier
-     *
-     * @return void
      */
     public function unregister($identifier)
     {
         $this->load();
 
         parent::unregister($identifier);
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry);
     }
 
     /**
      * Deletes the current registry from the database.
+     *
      * !! Use with caution !!
      * There is no rollback.
+     *
      * @throws \Assert\InvalidArgumentException in case the operation failed.
      */
     public function destroy()
     {
         $this->registry[$this->section] = array();
-        $this->drupalCommonConnector->variable_del($this->section, $this->registry);
+        $dcc = $this->getDrupalCommonConnector();
 
-        $content = $this->drupalCommonConnector->variable_get($this->section, array());
+        $dcc->variable_del($this->section, $this->registry);
+
+        $content = $dcc->variable_get($this->section, array());
 
         if (!empty($content)) {
             throw new \InvalidArgumentException(
@@ -123,7 +124,8 @@ class D7Config extends Registry
     }
 
     /**
-     * Initates a registry.
+     * Initiates a registry.
+     *
      * @throws RegistryException
      */
     public function init()
@@ -137,6 +139,6 @@ class D7Config extends Registry
             );
         }
 
-        $this->drupalCommonConnector->variable_set($this->section, $this->registry[$this->section]);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry[$this->section]);
     }
 }

@@ -136,6 +136,8 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::unregister
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::load
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testUnregister()
     {
@@ -193,6 +195,8 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::register
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::load
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testRegisterDuplicateWorldIdentifier()
     {
@@ -216,6 +220,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::isRegistered
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testIsRegistered()
     {
@@ -233,6 +238,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::getContent
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testGetContent()
     {
@@ -255,6 +261,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::getContentById
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testGetContentById()
     {
@@ -277,6 +284,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::destroy
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testDestroy()
     {
@@ -297,6 +305,7 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::destroy
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testDestroyExpectingExeption()
     {
@@ -318,6 +327,8 @@ class D7ConfigTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::init
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::load
+     * @covers \Liip\Drupal\Modules\Registry\Drupal\D7Config::setDrupalCommonConnector
      */
     public function testInit()
     {
