@@ -44,8 +44,6 @@ class Elasticsearch extends Registry
         parent::__construct($section, $assertion);
 
         $this->decorator = $decorator;
-//        $this->adaptor = $this->getESAdaptor();
-//        $this->registry[$section] = $this->adaptor->getIndex($section);
     }
 
     /**
