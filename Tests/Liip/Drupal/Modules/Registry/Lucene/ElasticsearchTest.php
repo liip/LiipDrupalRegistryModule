@@ -26,10 +26,6 @@ class ElasticsearchTest extends RegistryTestCase
                 array('tux', 'linus'),
                 array('tux', 'linus')
             ),
-            'store object'         => array(
-                (object)array('tux' => 'linus'),
-                (object)array('tux' => 'linus')
-            ),
         );
     }
 
