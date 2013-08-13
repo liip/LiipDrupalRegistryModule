@@ -107,6 +107,7 @@ class ElasticsearchTest extends RegistryTestCase
     public function testRegister()
     {
         $registry = $this->registerDocument(self::$indexName, 'toRegister', array('automotive' => 'train'));
+        $registry->init();
 
         $attribRegistry = $this->readAttribute($registry, 'registry');
         $type = $attribRegistry[self::$indexName]->getType('collab');
@@ -124,6 +125,7 @@ class ElasticsearchTest extends RegistryTestCase
     {
         $typeName = 'customTypeName';
         $registry = $this->registerDocument(self::$indexName, 'toRegister2', array('foo' => 'bar'), $typeName);
+        $registry->init();
 
         $attribRegistry = $this->readAttribute($registry, 'registry');
         $type = $attribRegistry[self::$indexName]->getType($typeName);
