@@ -44,8 +44,8 @@ class Elasticsearch extends Registry
         parent::__construct($section, $assertion);
 
         $this->decorator = $decorator;
-        $this->adaptor = $this->getESAdaptor();
-        $this->registry[$section] = $this->adaptor->getIndex($section);
+//        $this->adaptor = $this->getESAdaptor();
+//        $this->registry[$section] = $this->adaptor->getIndex($section);
     }
 
     /**
@@ -88,10 +88,7 @@ class Elasticsearch extends Registry
      */
     public function init()
     {
-        if (empty($this->registry[$this->section])) {
-
-            $this->registry[$this->section] = $this->adaptor->getIndex($this->section);
-        }
+        $this->getRegistryIndex($this->section);
     }
 
     /**
@@ -112,7 +109,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->registerDocument($this->section, $value, $identifier, $type);
+        $this->getESAdaptor()->registerDocument($this->section, $value, $identifier, $type);
     }
 
     /**
@@ -127,7 +124,7 @@ class Elasticsearch extends Registry
     {
         try {
 
-            $this->adaptor->getDocument($identifier, $this->section, $type);
+            $this->getESAdaptor()->getDocument($identifier, $this->section, $type);
         } catch (NotFoundException $e) {
 
             return false;
@@ -154,7 +151,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->updateDocument($identifier, $value, $this->section, $type);
+        $this->getESAdaptor()->updateDocument($identifier, $value, $this->section, $type);
     }
 
     /**
@@ -174,7 +171,7 @@ class Elasticsearch extends Registry
             );
         }
 
-        $this->adaptor->removeDocuments(array($identifier), $this->section, $type);
+        $this->getESAdaptor()->removeDocuments(array($identifier), $this->section, $type);
     }
 
     /**
@@ -184,7 +181,7 @@ class Elasticsearch extends Registry
     {
         $this->registry = array();
 
-        $this->adaptor->deleteIndex($this->section);
+        $this->getESAdaptor()->deleteIndex($this->section);
     }
 
     /**
@@ -193,7 +190,7 @@ class Elasticsearch extends Registry
      */
     public function getContent()
     {
-        return $this->adaptor->getDocuments($this->registry[$this->section]);
+        return $this->getESAdaptor()->getDocuments($this->getRegistryIndex($this->section));
     }
 
     /**
@@ -207,9 +204,9 @@ class Elasticsearch extends Registry
      */
     public function getContentById($identifier, $default = "", $type = "")
     {
-        $index = $this->registry[$this->section];
+        $index = $this->getRegistryIndex($this->section);
 
-        return $this->adaptor->getDocument($identifier, $index->getName(), $type);
+        return $this->getESAdaptor()->getDocument($identifier, $index->getName(), $type);
     }
 
     /**
@@ -220,5 +217,20 @@ class Elasticsearch extends Registry
     public function setESAdaptor(AdaptorInterface $adaptor)
     {
         $this->adaptor = $adaptor;
+    }
+
+    /**
+     * @param $section
+     *
+     * @return \Elastica\Index
+     */
+    protected function getRegistryIndex($section)
+    {
+        if (empty($this->registry[$section])){
+
+            $this->registry[$section] = $this->getESAdaptor()->getIndex($section);
+        }
+
+        return $this->registry[$section];
     }
 }
