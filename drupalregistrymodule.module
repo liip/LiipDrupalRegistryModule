@@ -6,7 +6,7 @@ use Liip\Drupal\Modules\DrupalConnector\ConnectorFactory;
  *
  * @return string
  */
-function Registry_help($path)
+function drupalregistrymodule_help($path)
 {
     if ('admin/help#Registry' == $path) {
 
