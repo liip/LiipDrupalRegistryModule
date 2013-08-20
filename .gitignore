@@ -3,7 +3,6 @@ build
 
 # Ignore composer specific stuff
 vendor
-composer.lock
 
 # Ingore IDE specifics
 # phpStrom
