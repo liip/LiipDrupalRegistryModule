@@ -68,6 +68,7 @@ class ElasticsearchTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::init
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getRegistryIndex
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::__construct
      */
     public function testInit()
@@ -301,7 +302,7 @@ class ElasticsearchTest extends RegistryTestCase
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
      * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setESAdaptor
      */
-    public function testGetEsAdaptor()
+    public function testGetEsAdaptorFromCache()
     {
         $esAdaptorFake = $this->getMockBuilder('\\Liip\\Registry\\Adaptor\\Lucene\\AdaptorInterface')
             ->getMockForAbstractClass();
@@ -310,7 +311,17 @@ class ElasticsearchTest extends RegistryTestCase
         $registry->setESAdaptor($esAdaptorFake);
 
         $this->assertSame($esAdaptorFake, $registry->getESAdaptor());
+    }
 
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getESAdaptor
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setESAdaptor
+     */
+    public function testGetEsAdaptor()
+    {
+        $registry = $this->getRegistryObject(self::$indexName);
+
+        $this->assertInstanceOf('\Liip\Registry\Adaptor\Lucene\ElasticaAdaptor', $registry->getESAdaptor());
     }
 
     /**
@@ -329,6 +340,60 @@ class ElasticsearchTest extends RegistryTestCase
         $registry->getEsAdaptor();
     }
 
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getIndexOptions
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setIndexOptions
+     */
+    public function testIndexOptions()
+    {
+        $options = array(
+            'number_of_shards'   => 4,
+            'number_of_replicas' => 1,
+            'analysis'           => array(
+                'analyzer' => array(
+                    'indexAnalyzer'  => array(
+                        'type'      => 'custom',
+                        'tokenizer' => 'standard',
+                        'filter'    => array('lowercase', 'mySnowball')
+                    ),
+                    'searchAnalyzer' => array(
+                        'type'      => 'custom',
+                        'tokenizer' => 'standard',
+                        'filter'    => array('standard', 'lowercase', 'mySnowball')
+                    )
+                ),
+                'filter'   => array(
+                    'mySnowball' => array(
+                        'type'     => 'snowball',
+                        'language' => 'German'
+                    )
+                )
+            )
+        );
+
+        $registry = $this->getRegistryObject(self::$indexName);
+        $registry->setIndexOptions($options);
+
+        $this->assertEquals($options, $registry->getIndexOptions());
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getIndexSpecials
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::setIndexSpecials
+     */
+    public function testIndexSpecials()
+    {
+        $options = array(
+            'recreate' => true,
+            'routing' => 'r1,r2'
+        );
+
+        $registry = $this->getRegistryObject(self::$indexName);
+        $registry->setIndexSpecials($options);
+
+        $this->assertEquals($options, $registry->getIndexSpecials());
+    }
+
     protected function setUp()
     {
         if (!class_exists('\Elastica\Index')) {
@@ -343,7 +408,7 @@ class ElasticsearchTest extends RegistryTestCase
 
         } catch (ClientException $e) {
             $this->markTestSkipped(
-                'The connection attemped to elasticsearch server failed. Error: ' . $e->getMessage()
+                'The connection attempt to elasticsearch server failed. Error: ' . $e->getMessage()
             );
         }
     }
