@@ -28,6 +28,14 @@ class Elasticsearch extends Registry
      * @var DecoratorInterface
      */
     protected $decorator;
+    /**
+     * @var array
+     */
+    protected $indexOptions = array();
+    /**
+     * @var array|null
+     */
+    protected $specials;
 
     /**
      * @param string $section
@@ -86,7 +94,7 @@ class Elasticsearch extends Registry
      */
     public function init()
     {
-        $this->getRegistryIndex($this->section);
+        $this->getRegistryIndex($this->section, $this->indexOptions, $this->specials);
     }
 
     /**
@@ -218,17 +226,64 @@ class Elasticsearch extends Registry
     }
 
     /**
-     * @param $section
+     * Provides an elastic search index.
+     *
+     * @param string $section$indexOptions = array(), $specials = null
+     * @param array $indexOptions
+     * @param null $specials
      *
      * @return \Elastica\Index
+     *
+     * @link http://elastica.io/getting-started/storing-and-indexing-documents.html
      */
-    protected function getRegistryIndex($section)
+    protected function getRegistryIndex($section, array $indexOptions = array(), $specials = null)
     {
         if (empty($this->registry[$section])){
 
-            $this->registry[$section] = $this->getESAdaptor()->getIndex($section);
+            $this->registry[$section] = $this->getESAdaptor()->getIndex($section, $indexOptions, $specials);
         }
 
         return $this->registry[$section];
+    }
+
+    /**
+     * Registers the option set to be used to create the next elastic search index.
+     *
+     * @param array $options
+     */
+    public function setIndexOptions(array $options = array())
+    {
+        $this->indexOptions = $options;
+    }
+
+    /**
+     * Reveals the current index options.
+     *
+     * @return array
+     */
+    public function getIndexOptions(){
+        return $this->indexOptions;
+    }
+
+    /**
+     * Defines the special options to create an elastic search index.
+     *
+     * @param array $options
+     *
+     * @see \Elastica\Index::create
+     */
+    public function setIndexSpecials(array $options)
+    {
+        $this->specials = $options;
+    }
+
+    /**
+     * Reveals the current set special options for index creation.
+     *
+     * @return array|null
+     */
+    public function getIndexSpecials()
+    {
+        return $this->specials;
     }
 }
