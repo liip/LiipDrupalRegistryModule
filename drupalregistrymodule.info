@@ -5,3 +5,5 @@ package = Liip Drupal Modules
 version = 0.5
 
 php = 5.3
+
+dependencies[] = drupalconnectormodule
