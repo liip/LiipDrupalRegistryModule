@@ -2,102 +2,334 @@
 
 namespace Liip\Drupal\Modules\Registry\Drupal\Database;
 
-use Assert\Assertion;
 use Liip\Drupal\Modules\Registry\Database\MySql;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
 
 class MySqlTest extends RegistryTestCase
 {
-    protected function getDbConfig()
-    {
-        return array(
-            'dsn' => 'mysql:host=localhost;dbname=registry',
-            'user' => '',
-            'password' => '',
-            'database' => 'registry',
-            'tableSQL' => "CREATE TABLE IF NOT EXISTS `%s` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
-                `entityId` int(11) NOT NULL,
-                `created` datetime DEFAULT NULL,
-                `data` text COLLATE utf8_unicode_ci NOT NULL,
-                PRIMARY KEY (`id`),
-                UNIQUE KEY `UNIQ_E275B389261FB672` (`entityId`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci",
-        );
-    }
-
-    public function setUp()
-    {
-        $config = $this->getDbConfig();
-
-        try {
-
-            if (!empty($config['password'])) {
-
-                $mysql = new \PDO($config['dsn'], $config['user'], $config['password']);
-            } else {
-
-                $mysql = new \PDO($config['dsn'], $config['user']);
-            }
-        } catch (\PDOException $e) {
-            $this->markTestSkipped($e->getMessage());
-        }
-    }
-
     /**
-     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::setConfiguration
-     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::validateConfiguration
+     * @param array $methods
+     *
+     * @return \PDOStatement|\PHPUnit_Framework_MockObject_MockObject
      */
-    public function testSetConfiguration()
+    protected function getDBResult(array $methods = array())
     {
-        $config = $this->getDbConfig();
-
-        $assertion = $this->getAssertionObjectMock();
-        $registry = new MySql('MyRegistry', $assertion);
-
-        $registry->setConfiguration($config);
-
-        $this->assertAttributeEquals($config, 'dbConfig', $registry);
+        return $this->getMockBuilder('\PDOStatement')
+            ->setMethods($methods)
+            ->getMock();
     }
 
     /**
-     * @dataProvider mySqlConfigurationProvider
-     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::validateConfiguration
+     * @param array $methods
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    public function testValidateConfigurationExpectingException($config)
+    protected function getDatabase(array $methods = array())
     {
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('Myregistry', new Assertion()))
-            ->setMethods(array('validateConfiguration'))
-            ->getProxy();
-
-        $this->setExpectedException('\Assert\InvalidArgumentException');
-
-        $registry->validateConfiguration($config);
-    }
-    public function mySqlConfigurationProvider()
-    {
-        return array(
-            'missing »tableSQL«' => array(array('user' => 'tux', 'dsn' => 'mysql:host=localhost')),
-            'missing »dsn«' => array(array('user' => 'tux', 'tableSQL' => 'CREATE %S [..]')),
-            'missing »user«' => array(array('dsn' => 'mysql:host=localhost', 'tableSQL' => 'CREATE %S [..]')),
-        );
+        return $this->getMockbuilder('\PDO')
+            ->setConstructorArgs(array('mysql:host=localhost'))
+            ->setMethods($methods)
+            ->getMock();
     }
 
     /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::__construct
      * @covers \Liip\Drupal\Modules\Registry\Database\MySql::init
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::registryTableExists
      */
     public function testInit()
     {
         $expected = array('myregistry' => array());
+
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array()));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->exactly(2))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->exactly(2))
+            ->method('query')
+            ->will($this->onConsecutiveCalls(
+                true,
+                $result
+            ));
+
         $assertion = $this->getAssertionObjectMock();
-        $registry = new MySql('MyRegistry', $assertion);
 
-        $registry->setConfiguration($this->getDbConfig());
-
+        $registry = new MySql('MyRegistry', $assertion, $database);
         $registry->init();
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::init
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::registryTableExists
+     */
+    public function testInitExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->init();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::destroy
+     */
+    public function testDestroy()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(true));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry->destroy();
+
+        $attrib = $this->readAttribute($registry, 'registry');
+        $this->assertEmpty($attrib['myregistry']);
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::destroy
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::throwException
+     */
+    public function testDestroyExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->destroy();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContent
+     */
+    public function testContent()
+    {
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array()));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->with($this->equalTo('SELECT * FROM `myregistry`;'))
+            ->will($this->returnValue($result));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->assertEquals(array(), $registry->getContent());
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContent
+     */
+    public function testContentExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->with($this->equalTo('SELECT * FROM `myregistry`;'))
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->getContent();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContentById
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContentByIds
+     */
+    public function testContentById()
+    {
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array('entityId' => 'foo')));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->with($this->equalTo('SELECT * FROM myregistry WHERE entityId IN (`foo`);'))
+            ->will($this->returnValue($result));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->assertEquals(array('entityId' => 'foo'), $registry->getContentById('foo'));
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContentById
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContentByIds
+     */
+    public function testContentByIdProvidingDefaultValue()
+    {
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array()));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->with($this->equalTo('SELECT * FROM myregistry WHERE entityId IN (`foo`);'))
+            ->will($this->returnValue($result));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->assertEquals(
+            array('entityId' => 'default'),
+            $registry->getContentById('foo', array('entityId' => 'default'))
+        );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::getContentByIds
+     */
+    public function testContentByIdsExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->with($this->equalTo('SELECT * FROM myregistry WHERE entityId IN (`foo`);'))
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->getContentById('foo');
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::register
+     */
+    public function testRegister()
+    {
+        $result = $this->getDBResult();
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array()));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->exactly(3))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->exactly(2))
+            ->method('query')
+            ->will($this->returnValue($result));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $registry->register('tux', json_encode(array()));
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::register
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::isRegistered
+     */
+    public function testRegisterExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->once())
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('query')
+            ->will( $this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->register('tux', json_encode(array()));
     }
 }
