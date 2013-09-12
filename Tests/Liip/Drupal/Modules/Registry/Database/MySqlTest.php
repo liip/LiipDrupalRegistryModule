@@ -1,6 +1,6 @@
 <?php
 
-namespace Liip\Drupal\Modules\Registry\Drupal\Database;
+namespace Liip\Drupal\Modules\Registry\Database;
 
 use Liip\Drupal\Modules\Registry\Database\MySql;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
@@ -286,7 +286,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testRegister()
     {
-        $result = $this->getDBResult();
+        $result = $this->getDBResult(array('fetchAll'));
         $result
             ->expects($this->once())
             ->method('fetchAll')
@@ -306,7 +306,10 @@ class MySqlTest extends RegistryTestCase
 
         $registry = new MySql('MyRegistry', $assertion, $database);
 
-        $registry->register('tux', json_encode(array()));
+        $registry->register('tux', array('entityId' => 'tux'));
+
+        $content = $this->readAttribute($registry, 'registry');
+        $this->assertEquals(array('entityId' => 'tux'), $content['myregistry']['tux']);
     }
 
     /**
@@ -315,6 +318,44 @@ class MySqlTest extends RegistryTestCase
      */
     public function testRegisterExpectingException()
     {
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue(array()));
+
+        $database = $this->getDatabase(array('quote', 'query'));
+        $database
+            ->expects($this->exactly(3))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->exactly(2))
+            ->method('query')
+            ->will($this->onConsecutiveCalls(
+                $result,
+                false
+            ));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = new MySql('MyRegistry', $assertion, $database);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->register('tux', array());
+    }
+
+    /**
+     * @dataProvider isRegisteredProvider
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::isRegistered
+     */
+    public function testIsRegistered($expected, $dbres)
+    {
+        $result = $this->getDBResult(array('fetchAll'));
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue($dbres));
         $database = $this->getDatabase(array('quote', 'query'));
         $database
             ->expects($this->once())
@@ -323,13 +364,141 @@ class MySqlTest extends RegistryTestCase
         $database
             ->expects($this->once())
             ->method('query')
-            ->will( $this->returnValue(false));
+            ->will($this->returnValue($result));
 
         $assertion = $this->getAssertionObjectMock();
 
         $registry = new MySql('MyRegistry', $assertion, $database);
 
+        $this->assertSame($expected, $registry->isRegistered('Tux'));
+    }
+    public function isRegisteredProvider()
+    {
+        return array(
+            'unregistered' => array(false, array()),
+            'registered' => array(true, array('entityId' => 'foo')),
+        );
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::replace
+     */
+    public function testReplace()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->exactly(3))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(1));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setProperties(array('registry'))
+            ->getProxy();
+        $registry->registry = array(
+            'myregistry' => array('Foo' => array('entityId' => 'Foo')),
+        );
+        $registry->replace('Foo', array('entityId' => 'FooBar'));
+
+        $content = $this->readAttribute($registry, 'registry');
+
+        $this->assertEquals(array('entityId' => 'FooBar'), $content['myregistry']['Foo']);
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::replace
+     */
+    public function testReplaceExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->exactly(3))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setProperties(array('registry'))
+            ->getProxy();
+        $registry->registry = array(
+            'myregistry' => array('Foo' => array('entityId' => 'Foo')),
+        );
+
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
-        $registry->register('tux', json_encode(array()));
+
+        $registry->replace('Foo', json_encode(array('entityId' => 'FooBar')));
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::unregister
+     */
+    public function testUnregister()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->exactly(2))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(1));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setProperties(array('registry'))
+            ->getProxy();
+        $registry->registry = array(
+            'myregistry' => array('Foo' => array('entityId' => 'Foo')),
+        );
+
+        $registry->unregister('Foo');
+
+        $content = $this->readAttribute($registry, 'registry');
+
+        $this->assertEmpty($content['myregistry']);
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Database\MySql::unregister
+     */
+    public function testUnregisterExpectingException()
+    {
+        $database = $this->getDatabase(array('quote', 'exec'));
+        $database
+            ->expects($this->exactly(2))
+            ->method('quote')
+            ->will($this->returnArgument(0));
+        $database
+            ->expects($this->once())
+            ->method('exec')
+            ->will($this->returnValue(false));
+
+        $assertion = $this->getAssertionObjectMock();
+
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setProperties(array('registry'))
+            ->getProxy();
+        $registry->registry = array(
+            'myregistry' => array('Foo' => array('entityId' => 'Foo')),
+        );
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+        $registry->unregister('Foo');
     }
 }

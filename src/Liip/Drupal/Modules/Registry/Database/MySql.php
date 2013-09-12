@@ -147,14 +147,15 @@ class MySql extends Registry
      */
     public function isRegistered($identifier)
     {
-        $entity = parent::isRegistered($identifier);
-
-        if (empty($entity)) {
+        if (false === parent::isRegistered($identifier)) {
             $entity = $this->getContentById($identifier);
 
             if (!empty($entity)) {
                 return true;
             }
+        } else {
+
+            return true;
         }
 
         return false;
@@ -166,24 +167,29 @@ class MySql extends Registry
      */
     public function replace($identifier, $value)
     {
+        // store current data to be able to restore on error;
+        $oldValue = @$this->registry[$this->section][$identifier];
+
+        parent::replace($identifier, $value);
+
         $sql = sprintf(
             'UPDATE %s SET `data`=`%s` WHERE `entityId`=`%s`;',
             $this->mysql->quote($this->section),
-            $this->mysql->quote($data),
+            $this->mysql->quote($value),
             $this->mysql->quote($identifier)
         );
 
-        $result = $this->mysql->query($sql);
+        $result = $this->mysql->exec($sql);
 
         if (false === $result) {
+
+            $this->registry[$this->section][$identifier] = $oldValue;
 
             $this->throwException(
                 'Failed to fetch information from the registry: ',
                 $this->mysql->errorInfo()
             );
         }
-
-        parent::replace($identifier, $value);
     }
 
     /**
@@ -191,23 +197,27 @@ class MySql extends Registry
      */
     public function unregister($identifier)
     {
+        $oldValue = @$this->registry[$this->section][$identifier];
+
+        parent::unregister($identifier);
+
         $sql = sprintf(
             'DELETE FROM %s WHERE `entityId`=`%s`;',
             $this->mysql->quote($this->section),
             $this->mysql->quote($identifier)
         );
 
-        $result = $this->mysql->query($sql);
+        $result = $this->mysql->exec($sql);
 
         if (false === $result) {
+
+            $this->registry[$this->section][$identifier] = $oldValue;
 
             $this->throwException(
                 'Failed to fetch information from the registry: ',
                 $this->mysql->errorInfo()
             );
         }
-
-        parent::unregister($identifier);
     }
 
     /**
