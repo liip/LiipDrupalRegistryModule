@@ -42,11 +42,7 @@ class MySqlTest extends RegistryTestCase
     {
         $expected = array('myregistry' => array());
 
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array()));
+        $result = $this->fetchAllDbResults(array('fetchAll'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -146,11 +142,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testContent()
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array()));
+        $result = $this->fetchAllDbResults(array('fetchAll'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -200,11 +192,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testContentById()
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array('entityId' => 'foo')));
+        $result = $this->fetchAllDbResults(array('fetchAll'), array('entityId' => 'foo'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -230,11 +218,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testContentByIdProvidingDefaultValue()
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array()));
+        $result = $this->fetchAllDbResults(array('fetchAll'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -286,11 +270,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testRegister()
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array()));
+        $result = $this->fetchAllDbResults(array('fetchAll'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -318,11 +298,7 @@ class MySqlTest extends RegistryTestCase
      */
     public function testRegisterExpectingException()
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(array()));
+        $result = $this->fetchAllDbResults(array('fetchAll'));
 
         $database = $this->getDatabase(array('quote', 'query'));
         $database
@@ -351,11 +327,8 @@ class MySqlTest extends RegistryTestCase
      */
     public function testIsRegistered($expected, $dbres)
     {
-        $result = $this->getDBResult(array('fetchAll'));
-        $result
-            ->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue($dbres));
+        $result = $this->fetchAllDbResults(array('fetchAll'), $dbres);
+
         $database = $this->getDatabase(array('quote', 'query'));
         $database
             ->expects($this->once())
@@ -500,5 +473,24 @@ class MySqlTest extends RegistryTestCase
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->unregister('Foo');
+    }
+
+    /**
+     * Provides a result object.
+     *
+     * @param array $methods
+     * @param array $returnValue
+     *
+     * @return \PDOStatement|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function fetchAllDbResults(array $methods, array $returnValue = array())
+    {
+        $result = $this->getDBResult($methods);
+        $result
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue($returnValue));
+
+        return $result;
     }
 }
