@@ -116,12 +116,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipDrupalConnectorModule.git",
-                "reference": "5525c694b9534835f9f6c87166dd946a604c2b7a"
+                "reference": "c268ca345b828d52e6010aefa453f466aad77abb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/5525c694b9534835f9f6c87166dd946a604c2b7a",
-                "reference": "5525c694b9534835f9f6c87166dd946a604c2b7a",
+                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/c268ca345b828d52e6010aefa453f466aad77abb",
+                "reference": "c268ca345b828d52e6010aefa453f466aad77abb",
                 "shasum": ""
             },
             "require": {
@@ -148,6 +148,10 @@
                     "name": "Bastian Feder",
                     "email": "bastian.feder@liip.ch",
                     "role": "maintainer"
+                },
+                {
+                    "name": "Liip AG",
+                    "homepage": "http://liip.ch"
                 }
             ],
             "description": "The DrupalConnector Module is an abstraction layer to the Drupal 7 API of global functions in order to use them in an OOD setup.",
@@ -161,7 +165,7 @@
                 "software quality",
                 "testing"
             ],
-            "time": "2013-08-20 13:45:50"
+            "time": "2013-08-27 15:33:17"
         },
         {
             "name": "liip/registryadaptor",
@@ -169,17 +173,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipRegistryAdaptor.git",
-                "reference": "84106842ebbe9cc3dbd9d6a0114142b05bcb7913"
+                "reference": "53bff5c132db2d9a5236c61d2ad88b996c7e06ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/84106842ebbe9cc3dbd9d6a0114142b05bcb7913",
-                "reference": "84106842ebbe9cc3dbd9d6a0114142b05bcb7913",
+                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/53bff5c132db2d9a5236c61d2ad88b996c7e06ce",
+                "reference": "53bff5c132db2d9a5236c61d2ad88b996c7e06ce",
                 "shasum": ""
             },
             "require": {
                 "beberlei/assert": "dev-master",
-                "php": ">=5.3.8,<5.4",
+                "php": ">=5.3.8",
                 "ruflin/elastica": "0.20.5.0.RC1"
             },
             "require-dev": {
@@ -215,7 +219,7 @@
                 "registry",
                 "software quality"
             ],
-            "time": "2013-08-15 09:44:37"
+            "time": "2013-08-22 10:02:54"
         },
         {
             "name": "ruflin/elastica",
@@ -298,7 +302,7 @@
             "authors": [
                 {
                     "name": "Bastian Feder",
-                    "email": "php@bastian-feder.de",
+                    "email": "lapis@bastian-feder.de",
                     "homepage": "http://blog.bastian-feder.de"
                 }
             ],
