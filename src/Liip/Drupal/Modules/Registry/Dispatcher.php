@@ -5,12 +5,15 @@
  */
 namespace Liip\Drupal\Modules\Registry;
 
+
+use Assert\Assertion;
+
 /**
  * Class Dispatcher
  * @package LiipDrupalModulesRegistry
  */
-class Dispatcher {
-
+class Dispatcher
+{
     /**
      * @var array
      */
@@ -19,7 +22,6 @@ class Dispatcher {
      * @var array
      */
     protected $errors = array();
-
 
     /**
      * Adds the provided registry to the dispatcher queue.
@@ -31,16 +33,20 @@ class Dispatcher {
      */
     public function attach(Registry $registry, $id = '')
     {
-        if ((!empty($id) || 0 === $id) && !empty($this->registries[$id])) {
-            throw new RegistryException(
-                RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT,
-                RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
-            );
-        }
-
         if (!empty($id) || 0 === $id) {
+
+            if (!empty($this->registries[$id])) {
+
+                throw new RegistryException(
+                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT,
+                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
+                );
+            }
+
             $this->registries[$id] = $registry;
+
         } else {
+
             $this->registries[] = $registry;
         }
     }
@@ -66,30 +72,58 @@ class Dispatcher {
 
     /**
      * Runs the requested action on each attached registry.
+     * Note:
+     *   This method does handle more than just the obvious argument.
+     *   Since the action callbacks do probably demand a set of arguments,
+     *   it is possible to just append it to the set of arguments to this mehtod.
+     *   Example:
+     *   // dispatch($action, [arg1,][arg2,][argN]);
+     *   $this->dispatch('register', 'entityId', array('tux' => 'gnu'));
+     *   will invoke:
+     *   $registry->$action('entityId', array('tux' => 'gnu'));
      *
      * @param string $action
      *
      * @return array
-     * @throws \InvalidArgumentException
      */
     public function dispatch($action)
     {
-        if (empty($this->registries)) {
-            throw new \InvalidArgumentException('No registries attached!');
-        }
+        Assertion::notEmpty($this->registries, 'No registries attached!');
+
+        // read arguments to be passed to the action callback
+        $args = func_get_args();
+        array_shift($args);
 
         $output = array();
 
         foreach ($this->registries as $id => $registry) {
 
-            try {
-                $args = func_get_args();
-                array_shift($args);
+            $output = $this->processRegistry($action, $registry, $id, $output, $args);
+        }
 
-                $output[$id] = call_user_func_array(array($registry, $action), $args);
-            } catch (RegistryException $e) {
-                $this->errors[$id] = $e;
-            }
+        return $output;
+    }
+
+    /**
+     * Invokes the defined callback on the given registry.
+     *
+     * @param string $action
+     * @param Registry $registry
+     * @param string $id
+     * @param array $output
+     * @param array $args
+     *
+     * @return array
+     */
+    protected function processRegistry($action, Registry $registry, $id, array $output, array $args = array())
+    {
+        try {
+
+            $output[$id] = call_user_func_array(array($registry, $action), $args);
+
+        } catch (RegistryException $e) {
+
+            $this->errors[$id] = $e;
         }
 
         return $output;
@@ -97,7 +131,6 @@ class Dispatcher {
 
     /**
      * Provides the set of last occurred errors.
-     *
      * @return array
      */
     public function getLastErrors()
@@ -107,7 +140,6 @@ class Dispatcher {
 
     /**
      * Indicates if an error occurred during dispatching.
-     *
      * @return bool
      */
     public function hasError()

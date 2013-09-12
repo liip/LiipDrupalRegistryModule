@@ -75,6 +75,22 @@ class DispatcherTest extends RegistryTestCase
     /**
      * @covers \Liip\Drupal\Modules\Registry\Dispatcher::attach
      */
+    public function testAttachNoIdentifier()
+    {
+        $registry = $this->getRegistryFake();
+
+        $dispatcher = new Dispatcher();
+        $dispatcher->attach($registry);
+
+        $this->assertAttributeEquals(
+            array($registry),
+            'registries',
+            $dispatcher
+        );
+    }
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Dispatcher::attach
+     */
     public function testAttachExpectingException()
     {
         $registry = $this->getRegistryFake();
@@ -112,12 +128,13 @@ class DispatcherTest extends RegistryTestCase
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Dispatcher::dispatch
+     * @covers \Liip\Drupal\Modules\Registry\Dispatcher::processRegistry
      */
     public function testDispatch()
     {
         $registry = $this->getRegistryMock(array('register'));
         $registry
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(3))
             ->method('register')
             ->with(
                 $this->isType('string'),
@@ -125,15 +142,20 @@ class DispatcherTest extends RegistryTestCase
             )
             ->will($this->onConsecutiveCalls(
                 true,
-                true
+                true,
+                $this->throwException(new RegistryException('error occurred.'))
             ));
 
         $dispatcher = new Dispatcher();
         $dispatcher->attach($registry, 'Tux');
         $dispatcher->attach($registry, 'Gnu');
+        $dispatcher->attach($registry, 'Linus');
+
         $output = $dispatcher->dispatch('register', 'registryId', array('id' => 'registryId'));
 
         $this->assertContainsOnly('boolean', $output);
+
+        $this->assertCount(1, $dispatcher->getLastErrors());
     }
 
     /**
