@@ -2,6 +2,7 @@
 
 namespace Liip\Drupal\Modules\Registry\Database;
 
+use Assert\Assertion;
 use Liip\Drupal\Modules\Registry\Database\MySql;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
 
@@ -370,10 +371,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
-            ->setProperties(array('registry'))
-            ->getProxy();
+        $registry = $this->getRegistryProxy($assertion, $database);
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -401,10 +399,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
-            ->setProperties(array('registry'))
-            ->getProxy();
+        $registry = $this->getRegistryProxy($assertion, $database);
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -431,10 +426,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
-            ->setProperties(array('registry'))
-            ->getProxy();
+        $registry = $this->getRegistryProxy($assertion, $database);
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -463,10 +455,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
-            ->setProperties(array('registry'))
-            ->getProxy();
+        $registry = $this->getRegistryProxy($assertion, $database);
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -492,5 +481,23 @@ class MySqlTest extends RegistryTestCase
             ->will($this->returnValue($returnValue));
 
         return $result;
+    }
+
+    /**
+     * Provides a proxied registry object.
+     *
+     * @param \Assert\Assertion $assertion
+     * @param \PDO $database
+     *
+     * @return MySql
+     */
+    protected function getRegistryProxy(Assertion $assertion, \PDO $database)
+    {
+        $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setProperties(array('registry'))
+            ->getProxy();
+
+        return $registry;
     }
 }
