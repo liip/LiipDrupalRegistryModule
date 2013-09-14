@@ -61,12 +61,9 @@ For those not familiar with PHPUnit a short intro:
 
 ```php
 
-$factory = new \Liip\Drupal\Modules\DrupalConnector\ConnectorFactory();
-$connector = $factory->getCommonConnector();
-
 $assertions = new \Assert\Assertion();
 
-$registry = new D7Config('myEvents', $connector, $assertions);
+$registry = new D7Config('myEvents', $assertions);
 
 // put stuff in to the registry.
 $registry->register('eventItemRegister', $item);
@@ -92,7 +89,41 @@ $registry->destroy();
 
 ```
 
+### Dispatching registry actions
+It turned out there is a need to multiply an action to a number of registries.
+In our case we needed to store data to an ElasticSearch custer and - for backup reasons - to a MySql database.
+To achieve this the dispatcher was introduced.
+
+Providing a container to attach registries the dispatcher invokes the requested action on every registered registry.
+Example:
+
+```php
+
+$assertions = new \Assert\Assertion();
+$indexName = 'myEvents';
+$connection = new \PDO('mysql:host=localhost;dbname=testdb');
+
+$drupalRegistry = new D7Config($indexName, $assertions);
+$esRegistry = new Elasticsearch($indexName, $assertion, new NoOpDecorator());
+$dbRegistry = new MySql($indexName, $assertion, $connection);
+
+$dispatcher = new Dispatcher();
+$dispatcher->attach($drupalRegistry, 'd7');
+$dispatcher->attach($esRegistry, 'es');
+$dispatcher->attach($dbRegistry, 'db');
+
+$output = $dispatcher->dispatch('register', 'myDocumentId', array({some content}));
+
+if ($dispatcher->hasError()) {
+
+    throw new RegistryException($dispatcher->getLastErrorMessages());
+}
+
+
+```
+
 ## Supported Systems
 - D7 configuration array (facade to variable_get(), variable_set(), variable_del())
 - Elasticsearch (based on the elastica library)
 - Memory
+- MySql
