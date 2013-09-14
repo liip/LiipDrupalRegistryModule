@@ -15,11 +15,11 @@ use Assert\Assertion;
 class Dispatcher
 {
     /**
-     * @var array
+     * @var Registry[]
      */
     protected $registries = array();
     /**
-     * @var array
+     * @var RegistryException[]
      */
     protected $errors = array();
 
@@ -131,7 +131,7 @@ class Dispatcher
 
     /**
      * Provides the set of last occurred errors.
-     * @return array
+     * @return RegistryException[]
      */
     public function getLastErrors()
     {
@@ -145,5 +145,23 @@ class Dispatcher
     public function hasError()
     {
         return !empty($this->errors);
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastErrorMessages()
+    {
+        $message = '';
+
+        if (!$this->hasError()){
+            return '';
+        }
+
+        foreach ($this->errors as $exception) {
+            $message .= $exception->getMessage() . ',' . PHP_EOL;
+        }
+
+        return $message;
     }
 }

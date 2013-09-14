@@ -88,6 +88,7 @@ class DispatcherTest extends RegistryTestCase
             $dispatcher
         );
     }
+
     /**
      * @covers \Liip\Drupal\Modules\Registry\Dispatcher::attach
      */
@@ -180,5 +181,32 @@ class DispatcherTest extends RegistryTestCase
 
         $this->assertTrue($dispatcher->hasError());
         $this->assertArrayHasKey('Gnu', $dispatcher->getLastErrors());
+    }
+
+    /**
+     * @dataProvider errorsProvider
+     * @covers \Liip\Drupal\Modules\Registry\Dispatcher::getLastErrorMessages
+     */
+    public function testGetLastErrorMessages($expected, $errors)
+    {
+        $dispatcher = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
+            ->setProperties(array('errors'))
+            ->getProxy();
+        $dispatcher->errors = $errors;
+
+        $this->assertEquals($expected, $dispatcher->getLastErrorMessages());
+    }
+    public function errorsProvider()
+    {
+        return array(
+            'no error' => array('', array()),
+            'some errors' => array(
+                'error while invoking d7::tux,'. PHP_EOL . 'error while invoking es::tux,'. PHP_EOL,
+                array(
+                    'd7' => new RegistryException('error while invoking d7::tux'),
+                    'es' => new RegistryException('error while invoking es::tux'),
+                )
+            ),
+        );
     }
 }
