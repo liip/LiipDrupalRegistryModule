@@ -38,8 +38,8 @@ class Dispatcher
             if (!empty($this->registries[$id])) {
 
                 throw new RegistryException(
-                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_TEXT,
-                    RegistryException::DUPLICATE_INITIATION_ATTEMPT_CODE
+                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_TEXT,
+                    RegistryException::DUPLICATE_REGISTRATION_ATTEMPT_CODE
                 );
             }
 
