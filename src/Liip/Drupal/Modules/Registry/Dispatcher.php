@@ -154,12 +154,11 @@ class Dispatcher
     {
         $message = '';
 
-        if (!$this->hasError()){
-            return '';
-        }
+        if ($this->hasError()){
 
-        foreach ($this->errors as $exception) {
-            $message .= $exception->getMessage() . ',' . PHP_EOL;
+            foreach ($this->errors as $exception) {
+                $message .= $exception->getMessage() . ',' . PHP_EOL;
+            }
         }
 
         return $message;
