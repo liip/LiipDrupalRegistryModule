@@ -5,6 +5,7 @@ namespace Liip\Drupal\Modules\Registry\Database;
 use Assert\Assertion;
 use Liip\Drupal\Modules\Registry\Registry;
 use Liip\Drupal\Modules\Registry\RegistryException;
+use Liip\Registry\Adaptor\Decorator\DecoratorInterface;
 
 
 class MySql extends Registry
@@ -13,48 +14,112 @@ class MySql extends Registry
      * @var \PDO Database connection object
      */
     protected $mysql;
+    /**
+     * @var \Liip\Registry\Adaptor\Decorator\DecoratorInterface
+     */
+    protected $decorator;
 
     /**
      * @param string $section
-     * @param Assertion $assertion
+     * @param \Assert\Assertion $assertion
      * @param \PDO $mysql
+     * @param \Liip\Registry\Adaptor\Decorator\DecoratorInterface $decorator
      */
-    public function __construct($section, Assertion $assertion, \PDO $mysql)
+    public function __construct($section, Assertion $assertion, \PDO $mysql, DecoratorInterface $decorator)
     {
         $section = strtolower($section);
 
         parent::__construct($section, $assertion);
 
         $this->mysql = $mysql;
+        $this->decorator = $decorator;
     }
 
     /**
-     * Provides the current content of the registry.
+     * Registers the provided value.
+     *
+     * @param string $identifier
+     * @param string $value
+     */
+    public function register($identifier, $value)
+    {
+        parent::register($identifier, $value);
+
+        $sql = sprintf(
+            'INSERT INTO %s (`entityId`, `data`) set (`%s`, `%s`);',
+            $this->mysql->quote($this->section),
+            $this->mysql->quote($identifier),
+            $this->decorator->normalizeValue($value)
+        );
+        $result = $this->mysql->query($sql);
+
+        if (false === $result) {
+
+            $this->registry[$this->section][$identifier] = null;
+
+            $this->throwException(
+                'Error occurred while registering an entity: ',
+                $this->mysql->errorInfo()
+            );
+        }
+    }
+
+    /**
+     * @param string $message
+     * @param array $error
+     *
+     * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     */
+    protected function throwException($message, array $error)
+    {
+        throw new RegistryException(
+            $message . $error[2],
+            $error[1]
+        );
+    }
+
+    /**
+     * @param string $identifier
+     *
+     * @return bool
+     */
+    public function isRegistered($identifier)
+    {
+        if (false === parent::isRegistered($identifier)) {
+            $entity = $this->getContentById($identifier);
+
+            if (!empty($entity)) {
+                return true;
+            }
+        } else {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Provides the registry content identified by its ID.
+     *
+     * @param string $identifier
+     * @param null $default
      *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      * @return array
      */
-    public function getContent()
+    public function getContentById($identifier, $default = null)
     {
-        $this->registry[$this->section] = parent::getContent();
+        if (empty($this->registry[$this->section][$identifier])) {
 
-        if (empty($this->registry[$this->section])) {
+            $this->registry[$this->section][$identifier] = $this->getContentByIds(array($identifier));
 
-            $sql = sprintf('SELECT * FROM `%s`;', $this->mysql->quote($this->section));
-            $result = $this->mysql->query($sql);
-
-            if (false === $result) {
-
-                $this->throwException(
-                    'Failed to fetch information from the registry: ',
-                    $this->mysql->errorInfo()
-                );
+            if (empty($this->registry[$this->section][$identifier])) {
+                return $default;
             }
-
-            $this->registry[$this->section] = $result->fetchAll(\PDO::FETCH_ASSOC);
         }
 
-        return $this->registry[$this->section];
+        return $this->registry[$this->section][$identifier];
     }
 
     /**
@@ -82,86 +147,15 @@ class MySql extends Registry
             );
         }
 
-        $content =  $result->fetchAll(\PDO::FETCH_ASSOC);
+        $content = $result->fetchAll(\PDO::FETCH_ASSOC);
         $this->registry[$this->section] = array_merge($this->registry[$this->section], $content);
 
         return $content;
     }
 
     /**
-     * Provides the registry content identified by its ID.
+     * Replaces the identified entity with the provided one.
      *
-     * @param string $identifier
-     * @param null $default
-     *
-     * @throws \Liip\Drupal\Modules\Registry\RegistryException
-     * @return array
-     */
-    public function getContentById($identifier, $default = null)
-    {
-        if (empty($this->registry[$this->section][$identifier])) {
-
-            $this->registry[$this->section][$identifier] = $this->getContentByIds(array($identifier));
-
-            if (empty($this->registry[$this->section][$identifier])) {
-                return $default;
-            }
-        }
-
-        return $this->registry[$this->section][$identifier];
-    }
-
-    /**
-     * Registers the provided value.
-     *
-     * @param string $identifier
-     * @param string $value
-     */
-    public function register($identifier, $value)
-    {
-        parent::register($identifier, $value);
-
-        $sql = sprintf(
-            'INSERT INTO %s (`entityId`, `data`) set (`%s`, `%s`);',
-            $this->mysql->quote($this->section),
-            $this->mysql->quote($identifier),
-            $value
-        );
-        $result = $this->mysql->query($sql);
-
-        if (false === $result) {
-
-            $this->registry[$this->section][$identifier] = null;
-
-            $this->throwException(
-                'Error occurred while registering an entity: ',
-                $this->mysql->errorInfo()
-            );
-        }
-    }
-
-    /**
-     * @param string $identifier
-     *
-     * @return bool
-     */
-    public function isRegistered($identifier)
-    {
-        if (false === parent::isRegistered($identifier)) {
-            $entity = $this->getContentById($identifier);
-
-            if (!empty($entity)) {
-                return true;
-            }
-        } else {
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param string $identifier
      * @param mixed $value
      */
@@ -193,6 +187,8 @@ class MySql extends Registry
     }
 
     /**
+     * Removes the identified entity form the registry.
+     *
      * @param string $identifier
      */
     public function unregister($identifier)
@@ -222,7 +218,6 @@ class MySql extends Registry
 
     /**
      * Shall delete the current registry from the database.
-     *
      * @throws RegistryException in case the deletion of the database failed.
      */
     public function destroy()
@@ -242,19 +237,17 @@ class MySql extends Registry
         }
 
         $this->registry[$this->section] = array();
-
     }
 
     /**
      * Shall register a new section in the registry
-     *
      * @return array
      */
     public function init()
     {
         $this->registryTableExists();
 
-        if (empty($this->registry[$this->section])){
+        if (empty($this->registry[$this->section])) {
 
             $this->registry[$this->section] = $this->getContent();
         }
@@ -264,7 +257,6 @@ class MySql extends Registry
 
     /**
      * Validates that the registry table exists.
-     *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      */
     protected function registryTableExists()
@@ -284,16 +276,51 @@ class MySql extends Registry
     }
 
     /**
-     * @param string $message
-     * @param array $error
-     *
+     * Provides the current content of the registry.
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
+     * @return array
      */
-    protected function throwException($message, array $error)
+    public function getContent()
     {
-        throw new RegistryException(
-            $message . $error[2],
-            $error[1]
-        );
+        $this->registry[$this->section] = parent::getContent();
+
+        if (empty($this->registry[$this->section])) {
+
+            $sql = sprintf('SELECT * FROM `%s`;', $this->mysql->quote($this->section));
+            $result = $this->mysql->query($sql);
+
+            if (false === $result) {
+
+                $this->throwException(
+                    'Failed to fetch information from the registry: ',
+                    $this->mysql->errorInfo()
+                );
+            }
+
+            $this->registry[$this->section] = $this->processResult($result->fetchAll(\PDO::FETCH_ASSOC));
+        }
+
+        return $this->registry[$this->section];
+    }
+
+    /**
+     * Processes the results to return a denormalized entity set.
+     *
+     * @param array $results
+     *
+     * @return array
+     */
+    protected function processResult(array $results)
+    {
+        foreach ($results as $key => $entity) {
+
+            if (!empty($entity['data'])) {
+
+                $entity['data'] = $this->decorator->denormalizeValue($entity['data']);
+                $results[$key] = $entity;
+            }
+        }
+
+        return $results;
     }
 }

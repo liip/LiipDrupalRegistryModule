@@ -5,6 +5,8 @@ namespace Liip\Drupal\Modules\Registry\Database;
 use Assert\Assertion;
 use Liip\Drupal\Modules\Registry\Database\MySql;
 use Liip\Drupal\Modules\Registry\Tests\RegistryTestCase;
+use Liip\Registry\Adaptor\Decorator\DecoratorInterface;
+use Liip\Registry\Adaptor\Decorator\NoOpDecorator;
 
 
 class MySqlTest extends RegistryTestCase
@@ -60,7 +62,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
         $registry->init();
 
         $this->assertAttributeEquals($expected, 'registry', $registry);
@@ -84,7 +86,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->init();
@@ -107,7 +109,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
         $registry->destroy();
 
         $attrib = $this->readAttribute($registry, 'registry');
@@ -132,7 +134,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->destroy();
@@ -158,7 +160,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->assertEquals(array(), $registry->getContent());
     }
@@ -181,7 +183,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->getContent();
@@ -208,7 +210,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->assertEquals(array('entityId' => 'foo'), $registry->getContentById('foo'));
     }
@@ -234,7 +236,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->assertEquals(
             array('entityId' => 'default'),
@@ -260,7 +262,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->getContentById('foo');
@@ -285,7 +287,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $registry->register('tux', array('entityId' => 'tux'));
 
@@ -316,7 +318,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
         $registry->register('tux', array());
@@ -342,7 +344,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = new MySql('MyRegistry', $assertion, $database);
+        $registry = new MySql('MyRegistry', $assertion, $database, new NoOpDecorator());
 
         $this->assertSame($expected, $registry->isRegistered('Tux'));
     }
@@ -371,7 +373,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getRegistryProxy($assertion, $database);
+        $registry = $this->getRegistryProxy($assertion, $database, new NoOpDecorator());
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -399,7 +401,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getRegistryProxy($assertion, $database);
+        $registry = $this->getRegistryProxy($assertion, $database, new NoOpDecorator());
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -426,7 +428,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getRegistryProxy($assertion, $database);
+        $registry = $this->getRegistryProxy($assertion, $database, new NoOpDecorator());
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -455,7 +457,7 @@ class MySqlTest extends RegistryTestCase
 
         $assertion = $this->getAssertionObjectMock();
 
-        $registry = $this->getRegistryProxy($assertion, $database);
+        $registry = $this->getRegistryProxy($assertion, $database, new NoOpDecorator());
         $registry->registry = array(
             'myregistry' => array('Foo' => array('entityId' => 'Foo')),
         );
@@ -488,13 +490,14 @@ class MySqlTest extends RegistryTestCase
      *
      * @param \Assert\Assertion $assertion
      * @param \PDO $database
+     * @param \Liip\Registry\Adaptor\Decorator\DecoratorInterface $decorator
      *
      * @return MySql
      */
-    protected function getRegistryProxy(Assertion $assertion, \PDO $database)
+    protected function getRegistryProxy(Assertion $assertion, \PDO $database, DecoratorInterface $decorator)
     {
         $registry = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Database\MySql')
-            ->setConstructorArgs(array('MyRegistry', $assertion, $database))
+            ->setConstructorArgs(array('MyRegistry', $assertion, $database, $decorator))
             ->setProperties(array('registry'))
             ->getProxy();
 
