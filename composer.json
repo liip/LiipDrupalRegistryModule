@@ -33,7 +33,8 @@
         "liip/drupalconnectormodule": "dev-master",
         "liip/registryadaptor": "dev-master",
         "beberlei/assert": "dev-master",
-        "ruflin/elastica": "0.20.5.0.RC1"
+        "ruflin/elastica": "0.20.5.0.RC1",
+        "psr/log": "~1.0"
     },
 
     "require-dev": {
