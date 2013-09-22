@@ -34,7 +34,7 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
      *
      * @param array $methods
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return \PHPUnit_Framework_MockObject_MockObject|\Assert\Assertion
      */
     protected function getAssertionObjectMock(array $methods = array())
     {
