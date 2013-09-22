@@ -308,11 +308,11 @@ class MultiplyTest extends RegistryTestCase
     public function testIsRegisteredFromCache()
     {
         $multiple = $this->getProxyBuilder('\Liip\Drupal\Modules\Registry\Multiply')
-            ->setConstructorArgs(array('testSection', $this->getAssertionObjectMock(), array('Popo')))
+            ->setConstructorArgs(array('testSection', $this->getAssertionObjectMock(), array('D7Config','Popo')))
             ->setProperties(array('registry'))
             ->getProxy();
         $multiple->registry = array('testSection' => array('tux' => array()));
-        $multiple->setFactory($this->getFactoryReturningNoContent());
+        $multiple->setFactory($this->getFactoryStub());
 
         $this->assertTrue($multiple->isRegistered('tux'));
     }
