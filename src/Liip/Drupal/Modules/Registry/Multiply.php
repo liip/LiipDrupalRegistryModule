@@ -45,7 +45,12 @@ class Multiply extends Registry implements LoggerAwareInterface
      */
     public function destroy()
     {
-        // TODO: Implement destroy() method.
+        $dispatcher = $this->getDispatcher();
+        $dispatcher->dispatch('destroy');
+
+        if ($dispatcher->hasError()) {
+            throw new RegistryException($dispatcher->getLastErrorMessages());
+        }
     }
 
     /**
@@ -53,7 +58,12 @@ class Multiply extends Registry implements LoggerAwareInterface
      */
     public function init()
     {
-        // TODO: Implement init() method.
+        $dispatcher = $this->getDispatcher();
+        $dispatcher->dispatch('init');
+
+        if ($dispatcher->hasError()) {
+            throw new RegistryException($dispatcher->getLastErrorMessages());
+        }
     }
 
     /**

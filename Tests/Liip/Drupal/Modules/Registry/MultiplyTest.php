@@ -77,6 +77,18 @@ class MultiplyTest extends RegistryTestCase
     }
 
     /**
+     * @param $methods
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getDispatcherStub(array $methods = array())
+    {
+        return $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
+            ->setMethods($methods)
+            ->getMock();
+    }
+
+    /**
      * Provides an instance of an implementation of the RegistryInterface
      *
      * @param string $class
@@ -150,9 +162,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testRegister()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->once())
             ->method('dispatch')
@@ -179,9 +189,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testRegisterExpectingException()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->exactly(2))
             ->method('hasError')
@@ -200,9 +208,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testReplace()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->exactly(2))
             ->method('hasError')
@@ -222,9 +228,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testReplaceExpectingException()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->once())
             ->method('dispatch')
@@ -251,10 +255,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testUnregister()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
-
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->exactly(2))
             ->method('hasError')
@@ -274,10 +275,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testUnregisterExpectingException()
     {
-        $dispatcher = $this->getMockBuilder('\Liip\Drupal\Modules\Registry\Dispatcher')
-            ->setMethods(array('dispatch', 'hasError'))
-            ->getMock();
-
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
         $dispatcher
             ->expects($this->exactly(2))
             ->method('hasError')
@@ -357,7 +355,7 @@ class MultiplyTest extends RegistryTestCase
      */
     public function testDispatcher()
     {
-        $dispatcher = $this->getMock('\Liip\Drupal\Modules\Registry\Dispatcher');
+        $dispatcher = $this->getDispatcherStub();
         $factory = $this->getFactoryStub(array('getRegistry'));
         $factory
             ->expects($this->once())
@@ -371,5 +369,87 @@ class MultiplyTest extends RegistryTestCase
 
         $multiple->setDispatcher($dispatcher);
         $this->assertSame($dispatcher, $multiple->getDispatcher());
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Multiply::init
+     */
+    public function testInit()
+    {
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
+        $dispatcher
+            ->expects($this->once())
+            ->method('dispatch');
+        $dispatcher
+            ->expects($this->once())
+            ->method('hasError')
+            ->will($this->returnValue(false));
+
+        $multiply = $this->getMultiplyObject('testSection', array('Popo'));
+        $multiply->setDispatcher($dispatcher);
+        $multiply->init();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Multiply::init
+     */
+    public function testInitExpectingException()
+    {
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
+        $dispatcher
+            ->expects($this->once())
+            ->method('dispatch');
+        $dispatcher
+            ->expects($this->exactly(2))
+            ->method('hasError')
+            ->will($this->returnValue(true));
+
+        $multiply = $this->getMultiplyObject('testSection', array('Popo'));
+        $multiply->setDispatcher($dispatcher);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+
+        $multiply->init();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Multiply::destroy
+     */
+    public function testDestroy()
+    {
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
+        $dispatcher
+            ->expects($this->once())
+            ->method('dispatch');
+        $dispatcher
+            ->expects($this->once())
+            ->method('hasError')
+            ->will($this->returnValue(false));
+
+        $multiply = $this->getMultiplyObject('testSection', array('Popo'));
+        $multiply->setDispatcher($dispatcher);
+        $multiply->destroy();
+    }
+
+    /**
+     * @covers \Liip\Drupal\Modules\Registry\Multiply::destroy
+     */
+    public function testDestroyExpectingException()
+    {
+        $dispatcher = $this->getDispatcherStub(array('dispatch', 'hasError'));
+        $dispatcher
+            ->expects($this->once())
+            ->method('dispatch');
+        $dispatcher
+            ->expects($this->exactly(2))
+            ->method('hasError')
+            ->will($this->returnValue(true));
+
+        $multiply = $this->getMultiplyObject('testSection', array('Popo'));
+        $multiply->setDispatcher($dispatcher);
+
+        $this->setExpectedException('\Liip\Drupal\Modules\Registry\RegistryException');
+
+        $multiply->destroy();
     }
 }
