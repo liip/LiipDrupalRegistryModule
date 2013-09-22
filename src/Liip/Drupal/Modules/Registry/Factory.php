@@ -10,23 +10,10 @@ use Liip\Drupal\Modules\Registry\Memory\Popo;
 class Factory implements FactoryInterface
 {
     /**
-     * @var  Dispatcher
-     */
-    protected $dispatcher;
-
-    /**
      * @var Registry[]
      */
     protected $instances = array();
 
-
-    /**
-     * @param array $registryNames
-     */
-    public function __construct(array $registryNames)
-    {
-        $this->registryIds = $registryNames;
-    }
 
     /**
      * Provides an instance of an implementation of the RegistryInterface.
@@ -40,7 +27,7 @@ class Factory implements FactoryInterface
     public function getRegistry($name, $section, Assertion $assertion)
     {
         if (empty($this->instances[$name])) {
-            $this->instances = $this->getInstanceOf($name, $section, $assertion);
+            $this->instances[$name] = $this->getInstanceOf($name, $section, $assertion);
         }
 
         return $this->instances[$name];
@@ -79,29 +66,5 @@ class Factory implements FactoryInterface
         }
 
         return $registry;
-    }
-
-    /**
-     * Provides an instance of the Dispatcher;
-     *
-     * @return Dispatcher
-     */
-    public function getDispatcher()
-    {
-        if (empty($this->dispatcher)) {
-            $this->dispatcher = new Dispatcher();
-        }
-
-        return $this->dispatcher;
-    }
-
-    /**
-     * Sets the dispatcher to be used to run an action on a set of registries;
-     *
-     * @param Dispatcher $dispatcher
-     */
-    public function setDispatcher(Dispatcher $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
     }
 }
