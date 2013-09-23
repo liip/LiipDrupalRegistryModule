@@ -133,7 +133,6 @@ abstract class Registry implements RegistryInterface
      * @param string $identifier
      *
      * @return bool
-     * @throws \Assert\InvalidArgumentException in case the $identifier is not a string.
      */
     public function isRegistered($identifier)
     {
