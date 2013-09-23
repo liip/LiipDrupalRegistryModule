@@ -3,6 +3,7 @@ namespace Liip\Drupal\Modules\Registry\Tests;
 
 use lapistano\ProxyObject\ProxyBuilder;
 use Liip\Drupal\Modules\Registry\Lucene\Elasticsearch;
+use Liip\Drupal\Modules\Registry\RegistryInterface;
 use Liip\Registry\Adaptor\Decorator\NormalizeDecorator;
 use Liip\Registry\Adaptor\Lucene\ElasticaAdaptor;
 
@@ -39,6 +40,22 @@ abstract class RegistryTestCase extends \PHPUnit_Framework_TestCase
     protected function getAssertionObjectMock(array $methods = array())
     {
         return $this->getMockBuilder('\\Assert\\Assertion')
+            ->setMethods($methods)
+            ->getMock();
+    }
+
+    /**
+     * Provides an instance of an implementation of the RegistryInterface
+     *
+     * @param string $class
+     * @param array $methods
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject|RegistryInterface
+     */
+    protected function getRegistryStub($class, array $methods = array())
+    {
+        return $this->getMockBuilder($class)
+            ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
     }

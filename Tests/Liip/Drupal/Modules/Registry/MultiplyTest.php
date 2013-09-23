@@ -88,22 +88,6 @@ class MultiplyTest extends RegistryTestCase
             ->getMock();
     }
 
-    /**
-     * Provides an instance of an implementation of the RegistryInterface
-     *
-     * @param string $class
-     * @param array $methods
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject|RegistryInterface
-     */
-    protected function getRegistryStub($class, array $methods = array())
-    {
-        return $this->getMockBuilder($class)
-            ->disableOriginalConstructor()
-            ->setMethods($methods)
-            ->getMock();
-    }
-
 
     /**
      * @covers \Liip\Drupal\Modules\Registry\Multiply::getContent
