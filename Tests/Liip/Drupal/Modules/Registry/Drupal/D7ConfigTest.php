@@ -18,7 +18,7 @@ class D7ConfigTest extends RegistryTestCase
 
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
         $assertions
-            ->staticExpects($this->exactly(2))
+            ->staticExpects($this->atLeastOnce())
             ->method('string')
             ->with($this->isType('string'));
 
@@ -46,7 +46,7 @@ class D7ConfigTest extends RegistryTestCase
 
         $drupalCommonConnector = $this->getDrupalCommonConnectorMock($methods);
         $drupalCommonConnector
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('variable_get')
             ->with(
                 $this->isType('string'),
@@ -224,14 +224,22 @@ class D7ConfigTest extends RegistryTestCase
      */
     public function testIsRegistered()
     {
+        $dcc = $this->getDrupalCommonConnectorMock(array('variable_get'));
+        $dcc
+            ->expects($this->atLeastOnce())
+            ->method('variable_get')
+            ->will(
+                $this->returnArgument(1)
+            );
+
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
         $assertions
-            ->staticExpects($this->exactly(2))
+            ->staticExpects($this->atLeastOnce())
             ->method('string')
             ->with($this->isType('string'));
 
         $registry = new D7Config('mySection', $assertions);
-        $registry->setDrupalCommonConnector($this->getDrupalCommonConnectorMock());
+        $registry->setDrupalCommonConnector($dcc);
 
         $this->assertFalse($registry->isRegistered('Tux'));
     }
@@ -244,7 +252,7 @@ class D7ConfigTest extends RegistryTestCase
     {
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
         $assertions
-            ->staticExpects($this->exactly(2))
+            ->staticExpects($this->atLeastOnce())
             ->method('string')
             ->with($this->isType('string'));
 
@@ -267,7 +275,7 @@ class D7ConfigTest extends RegistryTestCase
     {
         $assertions = $this->getAssertionObjectMock(array('string', 'notEmpty'));
         $assertions
-            ->staticExpects($this->exactly(2))
+            ->staticExpects($this->atLeastOnce())
             ->method('string')
             ->with($this->isType('string'));
 
@@ -279,7 +287,7 @@ class D7ConfigTest extends RegistryTestCase
 
         $registry->register('worldOfOs', array());
 
-        $this->assertInternalType('array', $registry->getContentById('worldOfOs'));
+        $this->assertInternalType('array', $registry->getContentById('worldOfOs', array()));
     }
 
     /**

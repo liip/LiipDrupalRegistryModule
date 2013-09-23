@@ -83,7 +83,7 @@ class D7Config extends Registry
         $this->load();
 
         parent::replace($identifier, $value);
-        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry[$this->section]);
     }
 
     /**
@@ -96,7 +96,7 @@ class D7Config extends Registry
         $this->load();
 
         parent::unregister($identifier);
-        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry);
+        $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry[$this->section]);
     }
 
     /**
@@ -112,7 +112,7 @@ class D7Config extends Registry
         $this->registry[$this->section] = array();
         $dcc = $this->getDrupalCommonConnector();
 
-        $dcc->variable_del($this->section, $this->registry);
+        $dcc->variable_del($this->section);
 
         $content = $dcc->variable_get($this->section, array());
 
@@ -141,4 +141,65 @@ class D7Config extends Registry
 
         $this->getDrupalCommonConnector()->variable_set($this->section, $this->registry[$this->section]);
     }
+
+    /**
+     * Provides the current set of registered items.
+     * @return array
+     */
+    public function getContent()
+    {
+        $content = parent::getContent();
+
+        if (empty($content)) {
+            $this->load();
+        }
+
+        return $this->registry[$this->section];
+    }
+
+    /**
+     * Finds the item corresponding to the provided identifier in the registry.
+     *
+     * @param string $identifier
+     * @param null $default
+     *
+     * @return mixed
+     */
+    public function getContentById($identifier, $default = null)
+    {
+        $content = parent::getContentById($identifier, $default);
+
+        if (empty($content)) {
+            $this->load();
+
+            $content = @$this->registry[$this->section][$identifier];
+
+            if (empty($content)) {
+                return $default;
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * Determines if the given identifier refers to a registry item.
+     *
+     * @param string $identifier
+     *
+     * @return bool
+     */
+    public function isRegistered($identifier)
+    {
+        if (!parent::isRegistered($identifier)) {
+
+            $this->load();
+
+            return parent::isRegistered($identifier);
+        }
+
+        return true;
+    }
+
+
 }
