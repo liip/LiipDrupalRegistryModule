@@ -12,7 +12,7 @@ It is not possible to store other objects than value objects without private mem
 ## Current Travis Status
 
 [![Build Status](https://travis-ci.org/liip/LiipDrupalRegistryModule.png?branch=master)](https://travis-ci.org/liip/LiipDrupalRegistryModule)
-
+[![Coverage Status](https://coveralls.io/repos/liip/LiipDrupalRegistryModule/badge.png)](https://coveralls.io/r/liip/LiipDrupalRegistryModule)
 
 ## Installation
 The source is now PSR-0 compatible. There is no specific installation routine to be followed. Just clone or checkout the source into to your project
