@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+        bootstrap="Tests/bootstrap.php"
+        strict="true"
+        stopOnError="true"
+        color="true"
+        forceCoversAnnotation="true"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        >
+
+    <testsuites>
+        <testsuite name="com.Mit Registry Module Test Suite">
+            <directory suffix="Test.php">./Tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
+
+    <filter>
+        <whitelist>
+            <directory>.</directory>
+            <exclude>
+                <file>*.info</file>
+                <file>*.module</file>
+
+                <directory>Tests</directory>
+                <directory>build</directory>
+                <directory>sites</directory>
+                <directory>templates</directory>
+                <directory>vendor</directory>
+                <directory>translations</directory>
+
+            </exclude>
+        </whitelist>
+    </filter>
+
+</phpunit>
