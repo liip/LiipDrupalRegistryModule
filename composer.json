@@ -41,7 +41,8 @@
     },
 
     "require-dev": {
-        "lapistano/proxy-object": "dev-master"
+        "lapistano/proxy-object": "dev-master",
+        "satooshi/php-coveralls": "dev-master"
     },
 
     "suggest": {
