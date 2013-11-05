@@ -36,7 +36,7 @@
         "php": ">=5.3.8",
         "liip/drupalconnectormodule": "dev-master",
         "liip/registryadaptor": "dev-master",
-        "beberlei/assert": "dev-master",
+        "beberlei/assert": "~1.5",
         "ruflin/elastica": "0.20.5.0.RC1"
     },
 
