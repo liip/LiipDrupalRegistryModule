@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "e4db5001b3aa64be9b270cc9eef69c60",
+    "hash": "4793660b8f1446e6f7fff80b4eea73eb",
     "packages": [
         {
             "name": "beberlei/assert",
-            "version": "dev-master",
+            "version": "v1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/beberlei/assert.git",
-                "reference": "11a44345da7b33634be0f6c0e0507755e936a738"
+                "reference": "b01a2868fcebcefc14ce3ae240d5b2fbba1d7126"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/beberlei/assert/zipball/11a44345da7b33634be0f6c0e0507755e936a738",
-                "reference": "11a44345da7b33634be0f6c0e0507755e936a738",
+                "url": "https://api.github.com/repos/beberlei/assert/zipball/b01a2868fcebcefc14ce3ae240d5b2fbba1d7126",
+                "reference": "b01a2868fcebcefc14ce3ae240d5b2fbba1d7126",
                 "shasum": ""
             },
             "require": {
@@ -44,7 +44,7 @@
                 "assertion",
                 "validation"
             ],
-            "time": "2013-07-24 16:58:55"
+            "time": "2013-10-01 11:37:27"
         },
         {
             "name": "composer/installers",
@@ -116,12 +116,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipDrupalConnectorModule.git",
-                "reference": "c268ca345b828d52e6010aefa453f466aad77abb"
+                "reference": "78233ec1ae4632df522a62875ef52f7419a4df00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/c268ca345b828d52e6010aefa453f466aad77abb",
-                "reference": "c268ca345b828d52e6010aefa453f466aad77abb",
+                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/78233ec1ae4632df522a62875ef52f7419a4df00",
+                "reference": "78233ec1ae4632df522a62875ef52f7419a4df00",
                 "shasum": ""
             },
             "require": {
@@ -152,6 +152,10 @@
                 {
                     "name": "Liip AG",
                     "homepage": "http://liip.ch"
+                },
+                {
+                    "name": "List of Contributors",
+                    "homepage": "https://github.com/liip/LiipDrupalConnectorModule/graphs/contributors"
                 }
             ],
             "description": "The DrupalConnector Module is an abstraction layer to the Drupal 7 API of global functions in order to use them in an OOD setup.",
@@ -165,7 +169,7 @@
                 "software quality",
                 "testing"
             ],
-            "time": "2013-08-27 15:33:17"
+            "time": "2013-10-23 10:01:02"
         },
         {
             "name": "liip/registryadaptor",
@@ -173,18 +177,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipRegistryAdaptor.git",
-                "reference": "53bff5c132db2d9a5236c61d2ad88b996c7e06ce"
+                "reference": "526a675946ad0dbc2baa72bb6dc1ee38778af82f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/53bff5c132db2d9a5236c61d2ad88b996c7e06ce",
-                "reference": "53bff5c132db2d9a5236c61d2ad88b996c7e06ce",
+                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/526a675946ad0dbc2baa72bb6dc1ee38778af82f",
+                "reference": "526a675946ad0dbc2baa72bb6dc1ee38778af82f",
                 "shasum": ""
             },
             "require": {
-                "beberlei/assert": "dev-master",
+                "beberlei/assert": "1.*",
                 "php": ">=5.3.8",
-                "ruflin/elastica": "0.20.5.0.RC1"
+                "ruflin/elastica": "v0.90.5.0"
             },
             "require-dev": {
                 "lapistano/proxy-object": "dev-master"
@@ -219,33 +223,40 @@
                 "registry",
                 "software quality"
             ],
-            "time": "2013-08-22 10:02:54"
+            "time": "2013-11-04 22:16:34"
         },
         {
             "name": "ruflin/elastica",
-            "version": "v0.20.5.0.RC1",
+            "version": "v0.90.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ruflin/Elastica.git",
-                "reference": "v0.20.5.0.RC1"
+                "reference": "8290c801df17df5ec3dff31f155867a30f793807"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ruflin/Elastica/zipball/v0.20.5.0.RC1",
-                "reference": "v0.20.5.0.RC1",
+                "url": "https://api.github.com/repos/ruflin/Elastica/zipball/8290c801df17df5ec3dff31f155867a30f793807",
+                "reference": "8290c801df17df5ec3dff31f155867a30f793807",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": ">=5.3.3"
             },
             "require-dev": {
                 "munkie/elasticsearch-thrift-php": "1.4.*",
-                "phpunit/phpunit": "3.7.*"
+                "psr/log": "~1.0"
             },
             "suggest": {
-                "munkie/elasticsearch-thrift-php": "Allow using thrift transport"
+                "monolog/monolog": "Logging request",
+                "munkie/elasticsearch-thrift-php": "Allow using thrift transport",
+                "psr/log": "for logging"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.20.5.x-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
                     "Elastica": "lib/",
@@ -263,12 +274,12 @@
                 }
             ],
             "description": "Elasticsearch Client",
-            "homepage": "http://ruflin.github.com/Elastica/",
+            "homepage": "http://elastica.io/",
             "keywords": [
                 "client",
                 "search"
             ],
-            "time": "2013-02-20 20:09:46"
+            "time": "2013-10-27 12:53:43"
         }
     ],
     "packages-dev": [
@@ -323,7 +334,6 @@
     "stability-flags": {
         "liip/drupalconnectormodule": 20,
         "liip/registryadaptor": 20,
-        "beberlei/assert": 20,
         "lapistano/proxy-object": 20
     },
     "platform": {
