@@ -396,6 +396,24 @@ class ElasticsearchTest extends RegistryTestCase
 
     protected function setUp()
     {
+        // ElasticServer up?
+        $alive = @file_get_contents('http://localhost:9200');
+
+        if (is_bool($alive) && !$alive) {
+            $connectionRefused = true;
+        } else {
+
+            $response = json_decode($alive);
+            $connectionRefused = !(200 === $response->status);
+        }
+
+        if ($connectionRefused) {
+            $this->markTestSkipped(
+                'The ElasticSearch server is not responding. Please make sure to start the server before running the tests.'
+            );
+        }
+
+
         if (!class_exists('\Elastica\Index')) {
             $this->markTestSkipped(
                 'The elastica library is not available. Please make sure to install the elastica library as proposed by composer.'
