@@ -40,9 +40,14 @@ interface RegistryInterface
 
     /**
      * Shall provide the current set of registered items.
+     *
+     * @param integer $limit  Amount of documents to be returned in result set. If set to 0 (zero) all documents of the result set shall be returned. Defaults to 10.
+     *
      * @return array
+     *
+     * @link http://stackoverflow.com/questions/8829468/elastic-search-query-to-return-all-records
      */
-    public function getContent();
+    public function getContent($limit = 10);
 
     /**
      * Shall find the registry item corresponding to the provided identifier.

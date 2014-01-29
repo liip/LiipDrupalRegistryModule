@@ -277,10 +277,19 @@ class MySql extends Registry
 
     /**
      * Provides the current content of the registry.
+     *
+     *
+     * NOTICE:
+     *  Setting $limit to anything else than 0 (zero) currently not have any affect on the amount of returned results.
+     *  This functionality is due to be implemented.
+     *
+     *
+     * @param integer $limit  Amount of documents to be returned in result set. If set to 0 (zero) all documents of the result set will be returned. Defaults to 0.
+     *
      * @throws \Liip\Drupal\Modules\Registry\RegistryException
      * @return array
      */
-    public function getContent()
+    public function getContent($limit = 0)
     {
         $this->registry[$this->section] = parent::getContent();
 

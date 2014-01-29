@@ -192,11 +192,14 @@ class Elasticsearch extends Registry
 
     /**
      * Provides the current set of registered items.
+     *
+     * @param integer $limit  Amount of documents to be returned in result set. If set to 0 (zero) all documents of the result set will be returned. Defaults to 0.
+     *
      * @return array
      */
-    public function getContent()
+    public function getContent($limit = 0)
     {
-        return $this->getESAdaptor()->getDocuments($this->getRegistryIndex($this->section));
+        return $this->getESAdaptor()->getDocuments($this->getRegistryIndex($this->section), $limit);
     }
 
     /**

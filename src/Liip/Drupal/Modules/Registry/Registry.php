@@ -57,9 +57,18 @@ abstract class Registry implements RegistryInterface
 
     /**
      * Provides the current set of registered items.
+     *
+     *
+     * NOTICE:
+     *  Setting $limit to anything else than 0 (zero) currently not have any affect on the amount of returned results.
+     *  This functionality is due to be implemented.
+     *
+     *
+     * @param integer $limit  Amount of documents to be returned in result set. If set to 0 (zero) all documents of the result set will be returned. Defaults to 0.
+     *
      * @return array
      */
-    public function getContent()
+    public function getContent($limit = 0)
     {
         return $this->registry[$this->section];
     }
@@ -69,7 +78,7 @@ abstract class Registry implements RegistryInterface
      *
      * @param array $identifiers
      *
-     * @return array
+     * @return \Liip\Drupal\Modules\CrudAdmin\Entities\EntityInterface[]
      */
     public function getContentByIds(array $identifiers)
     {
@@ -89,7 +98,7 @@ abstract class Registry implements RegistryInterface
      * @param string $identifier
      * @param null $default
      *
-     * @return mixed
+     * @return \Liip\Drupal\Modules\CrudAdmin\Entities\EntityInterface
      */
     public function getContentById($identifier, $default = null)
     {
