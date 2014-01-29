@@ -430,4 +430,50 @@ class ElasticsearchTest extends RegistryTestCase
             );
         }
     }
+
+    /**
+     * @dataProvider limitSettingsProvider
+     * @covers \Liip\Drupal\Modules\Registry\Lucene\Elasticsearch::getContent
+     */
+    public function testGetAmountOfDocuments($expected, $limit)
+    {
+        $values = array(
+            array('tux' => 'linus'),
+            array('tux1' => 'dolphin1'),
+            array('tux2' => 'linus1'),
+            array('tux3' => 'linus2'),
+            array('tux4' => 'dolphin2'),
+            array('tux5' => 'linus3'),
+            array('tux6' => 'dolphin3'),
+            array('Gnu' => 'dolphin'),
+            array('Gnu1' => 'dolphin5'),
+            array('Gnu2' => 'dolphin4'),
+            array('Gnu3' => 'dolphin6'),
+        );
+
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom11', $values[0]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom1', $values[1]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom2', $values[2]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom3', $values[3]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom4', $values[4]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom5', $values[5]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom6', $values[5]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom7', $values[6]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom8', $values[7]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom9', $values[8]);
+        $this->registerDocument(self::$indexName, 'toReadContentByIdFrom10', $values[9]);
+        $registry = $this->registerDocument(self::$indexName, 'toReadContentByIdFrom', $values[10]);
+
+        $this->assertCount($expected, $registry->getContent($limit));
+    }
+
+    public function limitSettingsProvider()
+    {
+        return array(
+            'just one document' => array(1, 1),
+            'all documents in index' => array(12, 0),
+            'default amount of documents' => array(10, 10),
+            'five documents' => array(5, 5),
+        );
+    }
 }
