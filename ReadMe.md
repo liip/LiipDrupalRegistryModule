@@ -68,7 +68,7 @@ $registry = new D7Config('myEvents', $assertions);
 // put stuff in to the registry.
 $registry->register('eventItemRegister', $item);
 
-// get as single element out of the registry or an empty array if it oes not exist.
+// get as single element out of the registry or an empty array if it does not exist.
 $item = $registry->getContentById('eventItemRegister', array());
 
 // get complete register
