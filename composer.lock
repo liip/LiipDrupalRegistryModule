@@ -1,7 +1,8 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
     "hash": "4793660b8f1446e6f7fff80b4eea73eb",
     "packages": [
@@ -116,12 +117,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipDrupalConnectorModule.git",
-                "reference": "93e338eeffa19074948534b51a9b4586010135a0"
+                "reference": "8fc2376eca9bbfb7abb31a36b61991b5a91dcf2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/93e338eeffa19074948534b51a9b4586010135a0",
-                "reference": "93e338eeffa19074948534b51a9b4586010135a0",
+                "url": "https://api.github.com/repos/liip/LiipDrupalConnectorModule/zipball/8fc2376eca9bbfb7abb31a36b61991b5a91dcf2e",
+                "reference": "8fc2376eca9bbfb7abb31a36b61991b5a91dcf2e",
                 "shasum": ""
             },
             "require": {
@@ -169,7 +170,7 @@
                 "software quality",
                 "testing"
             ],
-            "time": "2014-01-28 10:36:44"
+            "time": "2014-06-03 11:50:40"
         },
         {
             "name": "liip/registryadaptor",
@@ -177,12 +178,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liip/LiipRegistryAdaptor.git",
-                "reference": "0cb117200056e0f7bb1054932617af69b21780f4"
+                "reference": "97d517f4ef5ad1c0bd3360aad7990e444cdd832f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/0cb117200056e0f7bb1054932617af69b21780f4",
-                "reference": "0cb117200056e0f7bb1054932617af69b21780f4",
+                "url": "https://api.github.com/repos/liip/LiipRegistryAdaptor/zipball/97d517f4ef5ad1c0bd3360aad7990e444cdd832f",
+                "reference": "97d517f4ef5ad1c0bd3360aad7990e444cdd832f",
                 "shasum": ""
             },
             "require": {
@@ -223,7 +224,7 @@
                 "registry",
                 "software quality"
             ],
-            "time": "2014-01-16 09:18:28"
+            "time": "2014-05-06 09:08:08"
         },
         {
             "name": "ruflin/elastica",
