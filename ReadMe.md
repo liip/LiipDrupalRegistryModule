@@ -13,6 +13,10 @@ It is not possible to store other objects than value objects without private mem
 
 [![Build Status](https://travis-ci.org/liip/LiipDrupalRegistryModule.png?branch=master)](https://travis-ci.org/liip/LiipDrupalRegistryModule)
 
+## VersionEye Status 
+
+[![Dependency Status](https://www.versioneye.com/php/liip:drupalregistrymodule/badge.svg)](https://www.versioneye.com/php/liip:drupalregistrymodule) [![Reference Status](https://www.versioneye.com/php/liip:drupalregistrymodule/reference_badge.svg?style=flat)](https://www.versioneye.com/php/liip:drupalregistrymodule/references)
+
 
 ## Installation
 The source is now PSR-0 compatible. There is no specific installation routine to be followed. Just clone or checkout the source into to your project
